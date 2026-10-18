@@ -87,8 +87,7 @@ def export_action(checkpoint, out_dir, fmt, name, opset):
         ov_model = ov.convert_model(str(onnx_path))
         xml_path = out_dir / f'{name}.xml'
         ov.save_model(ov_model, str(xml_path), compress_to_fp16=False)
-        # Keep the sidecar discoverable next to the IR file too.
-        shutil.copyfile(meta_path, out_dir / f'{name}.meta.json')
+        # The .meta.json sidecar already lives in out_dir next to both the .onnx and .xml.
         print(f'[action] openvino -> {xml_path}')
         produced.append(xml_path)
         if fmt == 'openvino':
@@ -107,7 +106,7 @@ def main():
     p.add_argument('--format', choices=['onnx', 'openvino', 'both'], default='openvino')
     p.add_argument('--imgsz', type=int, default=640, help='Detector inference size; set FORTE_DETECTOR_IMGSZ to match')
     p.add_argument('--action-name', default='action', help='Base name for exported action files')
-    p.add_argument('--opset', type=int, default=17, help='ONNX opset for the action model')
+    p.add_argument('--opset', type=int, default=18, help='ONNX opset for the action model (18 matches the dynamo exporter; onnxruntime>=1.18 supports it)')
     p.add_argument('--int8', action='store_true', help='INT8-quantize the OpenVINO detector (needs calibration data)')
     args = p.parse_args()
 
