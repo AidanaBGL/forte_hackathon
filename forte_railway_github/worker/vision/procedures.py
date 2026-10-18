@@ -30,17 +30,41 @@ def clean_name(name):
     return ALIASES.get(str(name).strip().lower().replace(' ', '_'), str(name).strip().lower().replace(' ', '_'))
 
 
+# Canonical action names + their Russian labels (shared with the website).
+ACTION_CANON = {
+    'close door': 'door_closed', 'open door': 'door_open', 'close_door': 'door_closed', 'open_door': 'door_open',
+    'close_laptop': 'laptop_closed', 'open_laptop': 'laptop_open',
+    'safe_closing': 'safe_closing', 'cash_counting_machine': 'cash_counting_machine', 'cash_storage': 'cash_storage',
+    'cash_handover': 'cash_handover', 'cashbag_handover': 'cashbag_handover', 'computer_interaction': 'computer_interaction',
+    'document_handover': 'document_handover', 'cashier_leaving': 'cashier_leaving',
+}
+ACTION_RU = {
+    'document_handover': 'проверка/передача документов', 'cash_handover': 'передача наличных',
+    'cash_counting_machine': 'пересчёт на машинке', 'computer_interaction': 'запись в компьютер',
+    'cash_storage': 'уборка наличных в хранилище', 'safe_closing': 'закрытие сейфа',
+    'cashier_leaving': 'уход кассира', 'cashbag_handover': 'передача инкассаторского пакета',
+    'door_open': 'открытие двери', 'door_closed': 'закрытие двери',
+    'laptop_open': 'открытие ноутбука', 'laptop_closed': 'закрытие ноутбука',
+}
+
+
+def canon_action(a):
+    k = str(a).strip().lower().replace(' ', '_')
+    return ACTION_CANON.get(k, k)
+
+
 def _smooth_counts(counts, radius=2):
     """Median filter rejects single-frame misses; no scipy requirement."""
     if not counts: return []
     return [int(sorted(counts[max(0, i-radius):min(len(counts), i+radius+1)])[len(counts[max(0, i-radius):min(len(counts), i+radius+1)])//2]) for i in range(len(counts))]
 
 
-def classify_process(samples):
+def classify_process(samples, action_events=None):
     """Each sample: {t,objects:[{class_name,conf,bbox}]}; returns scores + explanation.
 
     Bag class 4 is now from *object detector* (not HSV); entry/exit only if reliable
-    occupancy transition at ends. Never use folder name or ground-truth label.
+    occupancy transition at ends. Recognised actions (from the action model) nudge the
+    scores toward the process they belong to. Never use folder name or ground-truth label.
     """
     if not samples:
         return {'class_id': None, 'name': 'Недостаточно данных', 'confidence': 0.0, 'scores': {}, 'reason': 'Нет кадров'}
@@ -70,7 +94,13 @@ def classify_process(samples):
     bag_frames=sum(any(o['class_name']=='cash_bag' and o.get('conf',1)>=.45 for o in s['objects']) for s in samples)
     if bag_frames >= 2 and bag_ratio >= .015: scores[4]=1.25+bag_ratio
     else: scores[4]=0.04
-    if any_ratio<.05 and bag_ratio<.015:
+    # Recognised actions nudge scores toward the process they belong to (additive, interpretable).
+    acts={canon_action(e.get('action')) for e in (action_events or [])}
+    if 'cashbag_handover' in acts: scores[4]+=0.6
+    if two_ratio>=.15 and ('cash_handover' in acts or 'document_handover' in acts): scores[0]+=0.35
+    if ('cash_counting_machine' in acts or 'cash_storage' in acts) and two_ratio<.15: scores[1]+=0.3
+    if 'cashier_leaving' in acts: scores[3]+=0.4
+    if any_ratio<.05 and bag_ratio<.015 and not acts:
         return {'class_id':None,'name':'Недостаточно данных','confidence':0.,
                 'scores':{str(k):round(float(v),3) for k,v in scores.items()},
                 'reason':'Детектор не нашёл людей или характерных объектов'}
@@ -81,6 +111,8 @@ def classify_process(samples):
     parts=[f'человек в кадре: {any_ratio:.0%}',f'двое или более: {two_ratio:.0%}',
            f'пакет cash_bag: {bag_ratio:.0%}', f'счётная машина: {machine_ratio:.0%}',
            f'присутствие в начале/конце: {start_present:.0%}/{end_present:.0%}']
+    if acts:
+        parts.append('распознанные действия: '+', '.join(ACTION_RU.get(a,a) for a in sorted(acts)))
     return {'class_id':int(best),'name':PROCESS_NAMES[best], 'confidence':confidence,
             'scores':{str(k):round(float(v),3) for k,v in scores.items()},'reason':'; '.join(parts),
             'warning':'Классификация процесса эвристическая; confidence не является вероятностью правильности.'}
@@ -195,3 +227,46 @@ def check_order_hypotheses(process, events, graphs, min_conf=.78):
                         'rule_id':'procedure_graph_'+key,
                         'confidence':round(min(a['confidence'],b['confidence'])*.65,3)})
     return flagged
+
+
+def missing_step_checks(process, action_events, graphs):
+    """Flag a required step as skipped ONLY when it is missing *inside* the observed
+    sequence: there is a recognised required action both before and after it in the
+    expected order. A missing step at the very start/end is NOT flagged, because the
+    clip may simply be truncated there (we did not see that part of the process).
+    """
+    cid = process.get('class_id')
+    if cid is None or str(cid) not in graphs:
+        return []
+    required = graphs[str(cid)].get('required_actions') or []
+    if len(required) < 3:
+        return []  # need room for a step to sit *between* observed neighbours
+    # Earliest timecode per recognised canonical action.
+    observed = {}
+    for e in action_events or []:
+        c = canon_action(e.get('action'))
+        if c not in observed or e['start_sec'] < observed[c]['start_sec']:
+            observed[c] = e
+    obs_idx = [i for i, a in enumerate(required) if a in observed]
+    if not obs_idx:
+        return []  # action model saw none of the required steps — no anchor, stay silent
+    findings = []
+    for i, a in enumerate(required):
+        if a in observed:
+            continue
+        before = [j for j in obs_idx if j < i]
+        after = [j for j in obs_idx if j > i]
+        if not before or not after:
+            continue  # edge step — possible clip truncation, do not flag
+        ru = ACTION_RU.get(a, a)
+        t_ref = observed[required[after[0]]]['start_sec']
+        findings.append({'code': f'MISSING_{a}',
+                         'type': f'Пропущен обязательный шаг: {ru}',
+                         'timecode_sec': round(float(t_ref), 2),
+                         'description': f'В процессе «{process.get("name")}» шаг «{ru}» не распознан, '
+                             f'хотя наблюдались действия и до, и после него — то есть фрагмент в этом месте '
+                             f'не обрезан. Похоже на пропуск шага. Требует проверки человеком.',
+                         'source_status': 'hypothesis',
+                         'rule_id': 'required_' + str(cid),
+                         'confidence': 0.6})
+    return findings

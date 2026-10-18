@@ -16,7 +16,7 @@ import cv2
 import numpy as np
 
 from .geometry import relation_events
-from .procedures import classify_process, detection_events, candidate_checks, check_order_hypotheses, clean_name, rules_from_file
+from .procedures import classify_process, detection_events, candidate_checks, check_order_hypotheses, missing_step_checks, clean_name, rules_from_file
 
 log = logging.getLogger(__name__)
 
@@ -321,7 +321,6 @@ class FortePipeline:
         stage('Детекция объектов')
         samples=read_yolo_detections(self.detector,det_frames,self.cfg.device,self.cfg.detector_imgsz,
                                      self.cfg.detector_conf,deadline)
-        proc=classify_process(samples)
         stage('Определение действий')
         state_events=detection_events(samples)
         spatial_events=relation_events(samples)
@@ -330,10 +329,13 @@ class FortePipeline:
             action_raw=self.action.predict_windows(act_frames,m['decoded_duration_sec'],
                 self.cfg.action_window_sec,self.cfg.action_stride_sec,self.cfg.action_threshold,deadline)
             action_events=combine_action_windows(action_raw,self.cfg.action_threshold)
+        # Process is classified from objects + occupancy AND the recognised actions.
+        proc=classify_process(samples,action_events)
         events=sorted(state_events+action_events+spatial_events,key=lambda e:e['start_sec'])
         stage('Проверка процедуры')
         warnings=candidate_checks(proc,samples,events,self.rules)
         warnings+=check_order_hypotheses(proc,events,self.graphs)
+        warnings+=missing_step_checks(proc,action_events,self.graphs)
         violations=[]
         for w in warnings:
             check_deadline(deadline)

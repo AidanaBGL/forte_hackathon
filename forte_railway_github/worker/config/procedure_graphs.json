@@ -5,6 +5,7 @@
     "label": "Приём наличных от клиента",
     "recognize_ru": "В кадре одновременно двое и более (кассир и клиент), на столе часто видны документы и наличные.",
     "checks_ru": ["Клиент присутствует во время пересчёта", "На рабочей поверхности нет наличных от предыдущей операции", "Документы и наличные идут по допустимому маршруту"],
+    "required_actions": ["document_handover", "cash_handover", "cash_counting_machine", "computer_interaction", "cash_storage"],
     "order_edges": [["document_handover", "cash_handover"], ["cash_handover", "cash_counting_machine"], ["cash_counting_machine", "cash_storage"]],
     "possible_checks": ["client present during counting", "cash from previous transaction not visible on work surface", "documents and cash follow permitted route"],
     "rule_refs": ["C01", "C03"], "status": "hypothesis_partial"
@@ -13,6 +14,7 @@
     "label": "Внутренний пересчёт наличных",
     "recognize_ru": "Один человек в кадре, присутствует счётная машинка, клиента нет.",
     "checks_ru": ["Используется счётная машинка", "К концу вне хранилища не остаётся наличных", "Проверяется состояние двери сейфа"],
+    "required_actions": ["cash_counting_machine", "computer_interaction", "cash_storage", "safe_closing"],
     "order_edges": [["cash_counting_machine", "cash_storage"]],
     "possible_checks": ["counting machine used", "no cash left outside storage at end", "safe door condition"],
     "rule_refs": ["C09", "H01"], "status": "hypothesis_partial"
@@ -21,6 +23,7 @@
     "label": "Вход в кассовое помещение",
     "recognize_ru": "В начале фрагмента человека нет, к концу он появляется (переход «пусто → есть человек»).",
     "checks_ru": ["Человек входит в помещение", "Состояние двери после входа"],
+    "required_actions": ["door_closed"],
     "order_edges": [["door_open", "door_closed"]],
     "possible_checks": ["person enters", "door state after entry"],
     "rule_refs": ["C14"], "status": "hypothesis_partial"
@@ -29,6 +32,7 @@
     "label": "Выход из кассового помещения",
     "recognize_ru": "В начале фрагмента кассир присутствует, к концу покидает кадр (переход «есть человек → пусто»).",
     "checks_ru": ["На рабочем месте нет видимых наличных", "Дверь сейфа закрыта", "Ноутбук визуально закрыт"],
+    "required_actions": ["computer_interaction", "safe_closing", "cashier_leaving"],
     "order_edges": [["laptop_closed", "cashier_leaving"], ["safe_closing", "cashier_leaving"]],
     "possible_checks": ["no visible cash at workstation", "safe door closed", "laptop visually closed"],
     "rule_refs": ["H02", "C13"], "status": "hypothesis_partial"
@@ -37,6 +41,7 @@
     "label": "Приём и обработка упаковки с наличными",
     "recognize_ru": "Устойчиво виден инкассаторский пакет cash_bag, обычно рядом со счётной машинкой.",
     "checks_ru": ["Упаковка вскрыта и содержимое обработано", "Проведён пересчёт", "Наличные убраны в хранилище"],
+    "required_actions": ["cashbag_handover", "cash_counting_machine", "cash_storage", "safe_closing"],
     "order_edges": [["cashbag_handover", "cash_counting_machine"], ["cash_counting_machine", "cash_storage"]],
     "possible_checks": ["package opened and contents handled", "counting procedure", "cash stored"],
     "rule_refs": ["C07", "C09", "H03"], "status": "hypothesis_partial"
