@@ -1,4 +1,5 @@
-# Install torch==2.6.0 torchvision==0.21.0 from the official cu126 wheel index first.
+# GPU worker. Install torch==2.6.0 torchvision==0.21.0 from the official cu126 wheel index first.
+# For CPU-only (no GPU) inference via ONNX/OpenVINO, use requirements-worker-cpu.txt instead.
 requests>=2.31,<3
 numpy>=1.24,<3
 opencv-python-headless>=4.8

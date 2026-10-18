@@ -1,0 +1,10 @@
+# CPU-only worker (no GPU). Install CPU torch/torchvision FIRST — ultralytics needs torch,
+# and the export step (worker/vision/export.py) needs torchvision to rebuild the action net:
+#   pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cpu
+# At INFERENCE time the ONNX/OpenVINO action backends do not use torch.
+requests>=2.31,<3
+numpy>=1.24,<3
+opencv-python-headless>=4.8
+ultralytics>=8.4
+openvino>=2024.3          # OpenVINO backend + IR conversion (export.py)
+onnxruntime>=1.18         # portable ONNX backend (alternative to OpenVINO)

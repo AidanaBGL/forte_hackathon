@@ -111,6 +111,40 @@ The worker first checks that the detector and action checkpoints exist. It loads
 
 On a shared GPU, make sure enough memory is available. You can first run `python -m worker.run_worker --once` to process one queued video, then run continuously via a supervised process (systemd/tmux/supervisor). For background production, use a process manager to restart the worker after a crash.
 
+### 3b. CPU-only worker (ONNX / OpenVINO) — no GPU required
+
+The same worker can run on a plain CPU (including a second Railway service) after you
+convert the two models to **OpenVINO** or **ONNX**. Run the exporter **once** on a machine
+that still has the trained `best.pt` files plus `torch`/`ultralytics`:
+
+```bash
+python -m pip install -r requirements-worker-cpu.txt
+# install CPU torch/torchvision first (see the file header)
+
+python -m worker.vision.export \
+  --detector /path/yolo26/weights/best.pt \
+  --action   /path/action_experiments/e02_mobilenet_ce_strong/best.pt \
+  --out models --format openvino --imgsz 640      # or --format onnx / both
+```
+
+This writes `models/best_openvino_model/` (detector), `models/action.xml` (+ `action.meta.json`),
+and/or `.onnx` equivalents. Then start the worker pointing at the exported artifacts:
+
+```bash
+export FORTE_DEVICE=cpu
+export FORTE_DETECTOR_IMGSZ=640                    # must match --imgsz used at export
+export FORTE_DETECTOR_WEIGHTS="models/best_openvino_model"   # or models/best.onnx
+export FORTE_ACTION_CHECKPOINT="models/action.xml"          # or models/action.onnx
+# optional: FORTE_ACTION_BACKEND=auto|torch|onnx|openvino, FORTE_CPU_THREADS=<N>
+python -m worker.run_worker
+```
+
+The detector loads through Ultralytics (which natively serves `.onnx` / `_openvino_model`).
+The action net picks a backend from the file extension: `.pt`→PyTorch, `.onnx`→ONNX Runtime,
+`.xml`→OpenVINO. No PyTorch is used at inference time for the ONNX/OpenVINO action backends —
+all metadata comes from the `*.meta.json` sidecar. Expect a noticeably larger per-video wall
+time than the V100; keep `FORTE_MAX_DURATION_SEC` within the ~300 s contest budget and measure.
+
 ## 4. Jury API exactly as required
 
 ```bash

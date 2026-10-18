@@ -13,6 +13,7 @@ class Settings:
     api_key: str = _get('FORTE_API_KEY', '')
     detector_weights: str = _get('FORTE_DETECTOR_WEIGHTS', '')
     action_checkpoint: str = _get('FORTE_ACTION_CHECKPOINT', '')
+    action_backend: str = _get('FORTE_ACTION_BACKEND', 'auto')
     device: str = _get('FORTE_DEVICE', '0')
     work_dir: Path = Path(_get('FORTE_WORK_DIR', str(ROOT / 'storage'))).resolve()
     sample_fps: float = float(_get('FORTE_SAMPLE_FPS', '2'))
@@ -30,8 +31,9 @@ class Settings:
     def assert_ready(self):
         if len(self.api_key) < 12:
             raise ValueError('FORTE_API_KEY must be set and have at least 12 characters')
-        if not self.detector_weights or not Path(self.detector_weights).is_file():
-            raise FileNotFoundError('Set FORTE_DETECTOR_WEIGHTS to the trained detector best.pt')
+        # Accepts a .pt file, an exported .onnx file, or an OpenVINO *_openvino_model directory.
+        if not self.detector_weights or not Path(self.detector_weights).exists():
+            raise FileNotFoundError('Set FORTE_DETECTOR_WEIGHTS to the detector best.pt / .onnx / _openvino_model')
         if self.action_checkpoint and not Path(self.action_checkpoint).is_file():
             raise FileNotFoundError(f'FORTE_ACTION_CHECKPOINT not found: {self.action_checkpoint}')
         if self.sample_fps <= 0 or self.action_stride_sec <= 0:

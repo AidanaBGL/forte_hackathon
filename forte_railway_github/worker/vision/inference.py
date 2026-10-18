@@ -103,23 +103,50 @@ def read_yolo_detections(model, frames, device, image_size, conf, deadline, batc
     return samples
 
 
-class ActionNet:
-    def __init__(self,checkpoint,device='cpu'):
-        import torch
-        from .action_arch import make_model
-        self.torch=torch
-        self.device=torch.device('cuda:0' if device != 'cpu' and torch.cuda.is_available() else 'cpu')
-        cp=torch.load(checkpoint,map_location='cpu',weights_only=False)
-        self.classes=list(cp['classes'])
-        self.frames=int(cp['frames']);self.size=int(cp['size']);self.norm=cp['normalization']
-        model,_=make_model(cp['model'],len(self.classes),pretrained=False,freeze_backbone=cp.get('freeze_backbone'))
-        model.load_state_dict(cp['state_dict'],strict=True)
-        self.model=model.to(self.device).eval()
-        if self.norm=='imagenet':
-            self.mean=np.array([.485,.456,.406],dtype=np.float32);self.std=np.array([.229,.224,.225],dtype=np.float32)
+IMAGENET_MEAN=np.array([.485,.456,.406],dtype=np.float32)
+IMAGENET_STD=np.array([.229,.224,.225],dtype=np.float32)
+KINETICS_MEAN=np.array([.43216,.394666,.37645],dtype=np.float32)
+KINETICS_STD=np.array([.22803,.22145,.216989],dtype=np.float32)
+
+
+def _softmax(logits):
+    z=logits-logits.max()
+    e=np.exp(z)
+    return e/e.sum()
+
+
+def _action_meta_path(model_path):
+    """Sidecar JSON written by the exporter, holding classes/frames/size/normalization."""
+    p=Path(model_path)
+    return p.with_name(p.stem+'.meta.json')
+
+
+class _ActionBackend:
+    """Shared windowing + preprocessing; subclasses only implement raw inference.
+
+    Input to `_infer` is a float32 clip of shape [1, C, T, H, W]; it must return a
+    1-D probability vector over `self.classes`.
+    """
+    def __init__(self,classes,frames,size,normalization):
+        self.classes=list(classes)
+        self.frames=int(frames)
+        self.size=int(size)
+        if normalization=='imagenet':
+            self.mean,self.std=IMAGENET_MEAN,IMAGENET_STD
         else:
-            self.mean=np.array([.43216,.394666,.37645],dtype=np.float32)
-            self.std=np.array([.22803,.22145,.216989],dtype=np.float32)
+            self.mean,self.std=KINETICS_MEAN,KINETICS_STD
+
+    def _window_input(self,frames,times,start,end):
+        target=np.linspace(start+.05,end-.05,self.frames)
+        indices=np.clip(np.searchsorted(times,target,side='left'),0,len(frames)-1)
+        imgs=np.stack([frames[i][1] for i in indices])
+        if imgs.shape[1] != self.size:
+            imgs=np.stack([cv2.resize(img,(self.size,self.size)) for img in imgs])
+        z=(imgs.astype(np.float32)/255.0-self.mean)/self.std
+        return np.ascontiguousarray(z.transpose(3,0,1,2)[None])  # [1,C,T,H,W]
+
+    def _infer(self,clip):  # -> np.ndarray [n_classes]
+        raise NotImplementedError
 
     def predict_windows(self,frames,duration,window_sec,stride_sec,threshold,deadline):
         if not frames:return []
@@ -132,28 +159,106 @@ class ActionNet:
             if end>=duration:break
             start+=stride_sec
         raw=[]
-        with self.torch.inference_mode():
-            for start,end in positions:
-                check_deadline(deadline)
-                target=np.linspace(start+.05,end-.05,self.frames)
-                indices=np.searchsorted(times,target,side='left')
-                indices=np.clip(indices,0,len(frames)-1)
-                imgs=np.stack([frames[i][1] for i in indices])
-                if imgs.shape[1] != self.size:
-                    imgs=np.stack([cv2.resize(img,(self.size,self.size)) for img in imgs])
-                z=(imgs.astype(np.float32)/255.0-self.mean)/self.std
-                z=self.torch.from_numpy(z.transpose(3,0,1,2).copy())[None].to(self.device)
-                if self.device.type=='cuda':
-                    with self.torch.autocast('cuda',dtype=self.torch.float16):
-                        probs=self.model(z).float().softmax(1)[0].cpu().numpy()
-                else:
-                    probs=self.model(z).float().softmax(1)[0].cpu().numpy()
-                best=int(probs.argmax())
-                raw.append({'start_sec':round(start,2),'end_sec':round(end,2),
-                            'action':self.classes[best],'confidence':round(float(probs[best]),3),
-                            'uncertain':bool(float(probs[best])<threshold),
-                            'source':'weakly_supervised_action_model'})
+        for start,end in positions:
+            check_deadline(deadline)
+            clip=self._window_input(frames,times,start,end)
+            probs=self._infer(clip)
+            best=int(probs.argmax())
+            raw.append({'start_sec':round(start,2),'end_sec':round(end,2),
+                        'action':self.classes[best],'confidence':round(float(probs[best]),3),
+                        'uncertain':bool(float(probs[best])<threshold),
+                        'source':'weakly_supervised_action_model'})
         return raw
+
+
+class TorchActionNet(_ActionBackend):
+    """PyTorch checkpoint backend (GPU or CPU); reads metadata from the checkpoint itself."""
+    def __init__(self,checkpoint,device='cpu'):
+        import torch
+        from .action_arch import make_model
+        self.torch=torch
+        self.device=torch.device('cuda:0' if device != 'cpu' and torch.cuda.is_available() else 'cpu')
+        cp=torch.load(checkpoint,map_location='cpu',weights_only=False)
+        super().__init__(cp['classes'],cp['frames'],cp['size'],cp['normalization'])
+        model,_=make_model(cp['model'],len(self.classes),pretrained=False,freeze_backbone=cp.get('freeze_backbone'))
+        model.load_state_dict(cp['state_dict'],strict=True)
+        self.model=model.to(self.device).eval()
+
+    def _infer(self,clip):
+        with self.torch.inference_mode():
+            z=self.torch.from_numpy(clip).to(self.device)
+            if self.device.type=='cuda':
+                with self.torch.autocast('cuda',dtype=self.torch.float16):
+                    return self.model(z).float().softmax(1)[0].cpu().numpy()
+            return self.model(z).float().softmax(1)[0].cpu().numpy()
+
+
+def _load_action_meta(model_path):
+    meta_path=_action_meta_path(model_path)
+    if not meta_path.is_file():
+        raise FileNotFoundError(
+            f'Missing action metadata sidecar {meta_path.name}. Re-run the exporter '
+            '(python -m worker.vision.export) to regenerate it next to the model file.')
+    return json.loads(meta_path.read_text(encoding='utf-8'))
+
+
+class OnnxActionNet(_ActionBackend):
+    """ONNX Runtime backend — portable CPU inference, no PyTorch at runtime."""
+    def __init__(self,model_path,meta=None):
+        import onnxruntime as ort
+        meta=meta or _load_action_meta(model_path)
+        super().__init__(meta['classes'],meta['frames'],meta['size'],meta['normalization'])
+        opts=ort.SessionOptions()
+        threads=int(os.environ.get('FORTE_CPU_THREADS','0'))
+        if threads>0:
+            opts.intra_op_num_threads=threads
+        opts.graph_optimization_level=ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        self.sess=ort.InferenceSession(str(model_path),sess_options=opts,providers=['CPUExecutionProvider'])
+        self.input_name=self.sess.get_inputs()[0].name
+
+    def _infer(self,clip):
+        logits=self.sess.run(None,{self.input_name:clip.astype(np.float32)})[0]
+        return _softmax(logits[0])
+
+
+class OpenvinoActionNet(_ActionBackend):
+    """OpenVINO backend — reads an IR (.xml) or an .onnx file; best CPU latency on Intel."""
+    def __init__(self,model_path,meta=None):
+        import openvino as ov
+        meta=meta or _load_action_meta(model_path)
+        super().__init__(meta['classes'],meta['frames'],meta['size'],meta['normalization'])
+        core=ov.Core()
+        model=core.read_model(str(model_path))
+        cfg={'PERFORMANCE_HINT':'LATENCY'}
+        threads=int(os.environ.get('FORTE_CPU_THREADS','0'))
+        if threads>0:
+            cfg['INFERENCE_NUM_THREADS']=str(threads)
+        self.compiled=core.compile_model(model,'CPU',cfg)
+        self.output=self.compiled.outputs[0]
+
+    def _infer(self,clip):
+        logits=self.compiled(clip.astype(np.float32))[self.output]
+        return _softmax(np.asarray(logits)[0])
+
+
+def load_action_model(model_path,device='cpu',backend='auto'):
+    """Pick an action-recognition backend by file type (or explicit FORTE_ACTION_BACKEND).
+
+    .pt -> PyTorch, .onnx -> ONNX Runtime, .xml -> OpenVINO IR. ONNX files can also be
+    forced onto the OpenVINO runtime with FORTE_ACTION_BACKEND=openvino.
+    """
+    ext=Path(model_path).suffix.lower()
+    if backend in (None,'','auto'):
+        backend={'.pt':'torch','.pth':'torch','.onnx':'onnx','.xml':'openvino'}.get(ext)
+        if backend is None:
+            raise ValueError(f'Cannot infer action backend from "{ext}"; set FORTE_ACTION_BACKEND')
+    if backend=='torch':
+        return TorchActionNet(model_path,device)
+    if backend=='onnx':
+        return OnnxActionNet(model_path)
+    if backend=='openvino':
+        return OpenvinoActionNet(model_path)
+    raise ValueError(f'Unknown FORTE_ACTION_BACKEND={backend!r} (use auto/torch/onnx/openvino)')
 
 
 def combine_action_windows(windows,threshold):
@@ -196,7 +301,7 @@ class FortePipeline:
         self.detector=YOLO(str(settings.detector_weights))
         self.action=None
         if settings.action_checkpoint:
-            self.action=ActionNet(settings.action_checkpoint,settings.device)
+            self.action=load_action_model(settings.action_checkpoint,settings.device,settings.action_backend)
         self.rules=rules_from_file(settings.rules_path)
         self.graphs=json.loads((Path(__file__).resolve().parents[1]/'config'/'procedure_graphs.json').read_text(encoding='utf-8'))
         self.cls_names={clean_name(v) for v in self.detector.names.values()}
