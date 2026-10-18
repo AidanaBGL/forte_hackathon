@@ -343,7 +343,29 @@ class FortePipeline:
             violations.append({'type':w['type'],'timecode_sec':t,'description':description,
                 'evidence_frames':[{'timestamp_sec':t,'image_base64':evidence_frame(path,t)}]})
         counts=Counter(o['class_name'] for s in samples for o in s['objects'])
+        # Frames that justify the process classification — shown on the website only,
+        # never in the jury API. Best-effort: start, most-informative frame, end.
+        process_evidence=[]
+        try:
+            ev_points=[]
+            if samples:
+                ev_points.append((samples[0]['t'],'Начало фрагмента'))
+                key_sample=max(samples,key=lambda s:len(s['objects']))
+                ev_points.append((key_sample['t'],'Ключевые объекты в кадре'))
+                ev_points.append((samples[-1]['t'],'Конец фрагмента'))
+            seen=set()
+            for t,cap in ev_points:
+                rt=round(float(t),2)
+                if rt in seen:continue
+                seen.add(rt)
+                check_deadline(deadline)
+                process_evidence.append({'timestamp_sec':rt,'caption':cap,
+                                         'image_base64':evidence_frame(path,rt)})
+        except Exception:
+            log.warning('Could not build process evidence frames',exc_info=True)
+        expectations=self.graphs.get(str(proc.get('class_id'))) if proc.get('class_id') is not None else None
         detail={'process':proc,'video':m,'events':events,'object_counts':dict(counts),
+                'process_expectations':expectations,'process_evidence':process_evidence,
                 'candidate_warnings':warnings,'action_windows':action_raw,
                 'observations':samples,'model_info':{
                     'detector':str(Path(self.cfg.detector_weights).name),
