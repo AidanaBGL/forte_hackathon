@@ -1,0 +1,18 @@
+{
+  "classes": [
+    "cash_counting_machine",
+    "cash_handover",
+    "cash_storage",
+    "cashbag_handover",
+    "cashier_leaving",
+    "close door",
+    "computer_interaction",
+    "document_handover",
+    "open door",
+    "safe_closing"
+  ],
+  "frames": 16,
+  "size": 128,
+  "normalization": "imagenet",
+  "model": "mobilenet_gru"
+}
