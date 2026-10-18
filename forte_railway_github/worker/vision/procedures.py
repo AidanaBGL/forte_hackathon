@@ -292,16 +292,6 @@ def object_condition_checks(process, samples, action_events, graphs):
     out=[]
     duration=samples[-1]['t']
     maxp=_max_people(samples)
-    # For cash-handling processes, no confirmed action step at all is itself suspicious.
-    if cid in (0,1,4):
-        required=(graphs.get(str(cid)) or {}).get('required_actions') or []
-        obs={canon_action(e.get('action')) for e in (action_events or [])}
-        if required and not any(a in obs for a in required):
-            out.append({'code':f'ACTIONS_UNCONFIRMED_{cid}','type':'Ключевые действия процесса не подтверждены',
-                'timecode_sec':round(duration,2),
-                'description':f'Процесс классифицирован как «{process.get("name")}», но модель действий не подтвердила '
-                    'ни одного характерного шага этого процесса. Классификация ненадёжна или процедура неполная/вне кадра.',
-                'source_status':'hypothesis','rule_id':'actions_unconfirmed_'+str(cid),'confidence':.5})
     if cid==0:  # приём наличных от клиента
         if not _ever_detected(samples,'document',.4,1):
             out.append({'code':'NO_DOCUMENT','type':'Документы клиента не наблюдались',
