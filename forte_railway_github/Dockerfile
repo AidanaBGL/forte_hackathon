@@ -2,9 +2,11 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 WORKDIR /app
 
-# OpenCV (headless) + torch need these small shared libs at runtime.
+# OpenCV + torch need these shared libs at runtime (ultralytics may pull full opencv-python,
+# which links libGL/libxcb/X11). Installing the set avoids ImportError whack-a-mole.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      libglib2.0-0 libgomp1 && rm -rf /var/lib/apt/lists/*
+      libglib2.0-0 libgomp1 libgl1 libxcb1 libxext6 libxrender1 libsm6 \
+      && rm -rf /var/lib/apt/lists/*
 
 COPY requirements-railway.txt requirements-worker-cpu.txt /app/
 # CPU torch/torchvision: required by ultralytics (detector). The ONNX action backend
