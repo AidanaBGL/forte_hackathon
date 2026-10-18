@@ -304,9 +304,25 @@ class FortePipeline:
         if settings.action_checkpoint:
             self.action=load_action_model(settings.action_checkpoint,settings.device,settings.action_backend)
         self.rules=rules_from_file(settings.rules_path)
+        self.rule_index={e['id']:e for e in (self.rules.get('procedures') or [])}
+        self.sources=self.rules.get('sources') or {}
         self.graphs=json.loads((Path(__file__).resolve().parents[1]/'config'/'procedure_graphs.json').read_text(encoding='utf-8'))
         self.cls_names={clean_name(v) for v in self.detector.names.values()}
         log.info('Loaded detector %s with %s',settings.detector_weights,sorted(self.cls_names))
+
+    def cite(self,rule_id):
+        """Return a normative citation for a rule-catalog id, or None for team hypotheses.
+
+        Only confirmed normative clauses (NB231/NB14/ForteBank) may back a legal basis;
+        hypothesis-only entries (H01..H03) intentionally return None.
+        """
+        entry=self.rule_index.get(rule_id) if rule_id else None
+        if not entry or entry.get('rule_status') not in ('normative','forte_public'):
+            return None
+        src=self.sources.get(entry.get('source_id'),{})
+        return {'rule_id':rule_id,'title':entry.get('title_ru'),'source':src.get('title'),
+                'url':src.get('url'),'clauses':', '.join(entry.get('clauses') or []),
+                'requirement':entry.get('requirement_summary'),'status':entry.get('rule_status')}
 
     def analyze(self,path,on_stage=None):
         def stage(msg):
@@ -341,10 +357,17 @@ class FortePipeline:
         for w in warnings:
             check_deadline(deadline)
             t=w['timecode_sec']
-            rule_ref='Гипотеза о рабочем процессе; подтверждённый нормативный пункт отсутствует'
-            description=f'{w["description"]} Источник: {rule_ref}. Вывод требует проверки человеком.'
-            violations.append({'type':w['type'],'timecode_sec':t,'description':description,
-                'evidence_frames':[{'timestamp_sec':t,'image_base64':evidence_frame(path,t)}]})
+            ref=self.cite(w.get('rule_id'))
+            if ref:
+                basis=(f'Основание: {ref["source"]}, п. {ref["clauses"]} — {ref["title"]} '
+                       f'(нормативное требование). {ref["url"]}')
+            else:
+                basis='Основание: рабочая гипотеза команды — подтверждённого нормативного пункта нет.'
+            description=f'{w["description"]} {basis} Вывод требует проверки человеком.'
+            v={'type':w['type'],'timecode_sec':t,'description':description,
+               'evidence_frames':[{'timestamp_sec':t,'image_base64':evidence_frame(path,t)}]}
+            if ref:v['rule']=ref
+            violations.append(v)
         counts=Counter(o['class_name'] for s in samples for o in s['objects'])
         # Frames that justify the process classification — shown on the website only,
         # never in the jury API. Best-effort: start, most-informative frame, end.

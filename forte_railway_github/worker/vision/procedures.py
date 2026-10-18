@@ -53,6 +53,14 @@ def canon_action(a):
     return ACTION_CANON.get(k, k)
 
 
+# Which rule-catalog clause backs each action's requirement (None => team hypothesis).
+ACTION_RULE = {
+    'document_handover': 'C01', 'cash_handover': 'C01', 'cash_counting_machine': 'C09',
+    'cash_storage': 'C13', 'safe_closing': 'C13', 'cashier_leaving': 'C04',
+    'cashbag_handover': 'C07', 'computer_interaction': None, 'door_closed': 'C14',
+}
+
+
 def _smooth_counts(counts, radius=2):
     """Median filter rejects single-frame misses; no scipy requirement."""
     if not counts: return []
@@ -267,7 +275,7 @@ def missing_step_checks(process, action_events, graphs):
                              f'хотя наблюдались действия и до, и после него — то есть фрагмент в этом месте '
                              f'не обрезан. Похоже на пропуск шага. Требует проверки человеком.',
                          'source_status': 'hypothesis',
-                         'rule_id': 'required_' + str(cid),
+                         'rule_id': ACTION_RULE.get(a) or ('required_' + str(cid)),
                          'confidence': 0.6})
     return findings
 
@@ -303,16 +311,16 @@ def object_condition_checks(process, samples, action_events, graphs):
             out.append({'code':'TOO_MANY_PEOPLE','type':'Более двух человек в кассовой зоне',
                 'timecode_sec':round(duration,2),
                 'description':f'Одновременно в кадре до {maxp} человек; для приёма наличных ожидаются только кассир и клиент.',
-                'source_status':'hypothesis','rule_id':'C03','confidence':.6})
+                'rule_id':'C14','confidence':.6})
     if cid==1:  # внутренний пересчёт
         if maxp>=2:
             out.append({'code':'EXTRA_PERSON','type':'Посторонний во время внутреннего пересчёта',
                 'timecode_sec':round(duration,2),
                 'description':f'Во время внутреннего пересчёта в кадре одновременно до {maxp} человек, тогда как ожидается один сотрудник.',
-                'source_status':'hypothesis','rule_id':'C09','confidence':.55})
+                'rule_id':'C14','confidence':.55})
         if _ever_detected(samples,'phone',.4,2):
             out.append({'code':'PHONE_PRESENT','type':'Обнаружен телефон во время пересчёта',
                 'timecode_sec':round(duration,2),
-                'description':'В кадре во время пересчёта наблюдается телефон.',
-                'source_status':'hypothesis','rule_id':'H01','confidence':.5})
+                'description':'В кадре во время пересчёта наблюдается телефон (посторонний предмет на рабочем месте).',
+                'rule_id':'','confidence':.5})
     return out

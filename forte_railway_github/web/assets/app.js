@@ -75,7 +75,11 @@ function render(report,details){
  const violations=$('violations');violations.replaceChildren();
  for(const v of report.violations||[]){const box=make('div','violation'),encoded=v.evidence_frames?.[0]?.image_base64;
   if(encoded && encoded.length<2000000){const img=make('img');img.src='data:image/jpeg;base64,'+encoded;img.alt='Evidence frame';box.append(img);}
-  const content=make('div');content.append(make('strong','',`${v.type} · ${Number(v.timecode_sec||0).toFixed(1)} сек`),make('p','',v.description));box.append(content);violations.append(box);}
+  const content=make('div');content.append(make('strong','',`${v.type} · ${Number(v.timecode_sec||0).toFixed(1)} сек`),make('p','',v.description));
+  const law=make('div','law');
+  if(v.rule){law.append(make('span','law-badge','НОРМА'));const a=make('a','law-link',`${v.rule.source} · п. ${v.rule.clauses}`);if(v.rule.url){a.href=v.rule.url;a.target='_blank';a.rel='noopener';}law.append(a);}
+  else law.append(make('span','law-badge hyp','ГИПОТЕЗА'));
+  content.append(law);box.append(content);violations.append(box);}
  if(!violations.children.length)violations.append(make('div','empty','Признаки нарушений не выявлены в пределах наблюдаемого фрагмента.'));
 }
 async function showJob(jobId){
