@@ -16,7 +16,7 @@ import cv2
 import numpy as np
 
 from .geometry import relation_events
-from .procedures import classify_process, detection_events, candidate_checks, check_order_hypotheses, missing_step_checks, clean_name, rules_from_file
+from .procedures import classify_process, detection_events, candidate_checks, check_order_hypotheses, missing_step_checks, object_condition_checks, clean_name, rules_from_file
 
 log = logging.getLogger(__name__)
 
@@ -336,6 +336,7 @@ class FortePipeline:
         warnings=candidate_checks(proc,samples,events,self.rules)
         warnings+=check_order_hypotheses(proc,events,self.graphs)
         warnings+=missing_step_checks(proc,action_events,self.graphs)
+        warnings+=object_condition_checks(proc,samples,action_events,self.graphs)
         violations=[]
         for w in warnings:
             check_deadline(deadline)

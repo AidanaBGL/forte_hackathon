@@ -270,3 +270,59 @@ def missing_step_checks(process, action_events, graphs):
                          'rule_id': 'required_' + str(cid),
                          'confidence': 0.6})
     return findings
+
+
+def _max_people(samples):
+    counts=[sum(o['class_name']=='person' and o.get('conf',1)>=.4 for o in s['objects']) for s in samples]
+    counts=_smooth_counts(counts)
+    return max(counts) if counts else 0
+
+
+def _ever_detected(samples,label,min_conf=.4,min_frames=1):
+    return sum(_obj_present(s,label,min_conf) for s in samples)>=min_frames
+
+
+def object_condition_checks(process, samples, action_events, graphs):
+    """Object/occupancy-based checks that do NOT depend on the (weak) action model:
+    missing characteristic objects, extra people, phone. Each is a candidate hypothesis.
+    """
+    cid=process.get('class_id')
+    if cid is None or not samples:
+        return []
+    out=[]
+    duration=samples[-1]['t']
+    maxp=_max_people(samples)
+    # For cash-handling processes, no confirmed action step at all is itself suspicious.
+    if cid in (0,1,4):
+        required=(graphs.get(str(cid)) or {}).get('required_actions') or []
+        obs={canon_action(e.get('action')) for e in (action_events or [])}
+        if required and not any(a in obs for a in required):
+            out.append({'code':f'ACTIONS_UNCONFIRMED_{cid}','type':'Ключевые действия процесса не подтверждены',
+                'timecode_sec':round(duration,2),
+                'description':f'Процесс классифицирован как «{process.get("name")}», но модель действий не подтвердила '
+                    'ни одного характерного шага этого процесса. Классификация ненадёжна или процедура неполная/вне кадра.',
+                'source_status':'hypothesis','rule_id':'actions_unconfirmed_'+str(cid),'confidence':.5})
+    if cid==0:  # приём наличных от клиента
+        if not _ever_detected(samples,'document',.4,1):
+            out.append({'code':'NO_DOCUMENT','type':'Документы клиента не наблюдались',
+                'timecode_sec':round(duration,2),
+                'description':'Процесс похож на приём наличных, но документ ни разу не обнаружен в кадре — '
+                    'возможно, документы клиента не проверялись (либо были вне поля камеры).',
+                'source_status':'hypothesis','rule_id':'C01','confidence':.55})
+        if maxp>2:
+            out.append({'code':'TOO_MANY_PEOPLE','type':'Более двух человек в кассовой зоне',
+                'timecode_sec':round(duration,2),
+                'description':f'Одновременно в кадре до {maxp} человек; для приёма наличных ожидаются только кассир и клиент.',
+                'source_status':'hypothesis','rule_id':'C03','confidence':.6})
+    if cid==1:  # внутренний пересчёт
+        if maxp>=2:
+            out.append({'code':'EXTRA_PERSON','type':'Посторонний во время внутреннего пересчёта',
+                'timecode_sec':round(duration,2),
+                'description':f'Во время внутреннего пересчёта в кадре одновременно до {maxp} человек, тогда как ожидается один сотрудник.',
+                'source_status':'hypothesis','rule_id':'C09','confidence':.55})
+        if _ever_detected(samples,'phone',.4,2):
+            out.append({'code':'PHONE_PRESENT','type':'Обнаружен телефон во время пересчёта',
+                'timecode_sec':round(duration,2),
+                'description':'В кадре во время пересчёта наблюдается телефон.',
+                'source_status':'hypothesis','rule_id':'H01','confidence':.5})
+    return out

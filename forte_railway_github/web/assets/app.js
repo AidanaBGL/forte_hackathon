@@ -20,10 +20,12 @@ async function req(path,init={},binary=false){
  return binary?rsp.blob():rsp.json();
 }
 function render(report,details){
- $('result').classList.remove('hidden');
+ const r=$('result');r.classList.remove('hidden');
+ r.classList.remove('show');void r.offsetWidth;r.classList.add('show'); // retrigger entrance
  const viol=report.verdict==='violation';
- $('verdict').textContent=viol?'ВОЗМОЖНОЕ НАРУШЕНИЕ':'НЕ ОБНАРУЖЕНО';
- $('verdict').classList.toggle('warn',viol);
+ const vb=$('verdict');vb.textContent=viol?'ВОЗМОЖНОЕ НАРУШЕНИЕ':'НЕ ОБНАРУЖЕНО';
+ vb.classList.toggle('warn',viol);
+ vb.classList.remove('pop');void vb.offsetWidth;vb.classList.add('pop'); // retrigger pop
  const p=details.process||{},exp=details.process_expectations||null;
  $('processName').textContent=p.name||'Не определён';
  $('processConf').textContent=p.confidence!==undefined?`достоверность ${Math.round(p.confidence*100)}%`:'';
@@ -39,7 +41,8 @@ function render(report,details){
  const scores=p.scores||{},mx=Math.max(0.001,...Object.values(scores).map(Number));
  for(const k of Object.keys(PROC)){const v=Number(scores[k]||0);const row=make('div','scorebar');
   row.append(make('span','sb-name',PROC[k]));
-  const track=make('span','sb-track'),fill=make('span','sb-fill');fill.style.width=Math.round(v/mx*100)+'%';
+  const track=make('span','sb-track'),fill=make('span','sb-fill');
+  const pct=Math.round(v/mx*100);fill.style.width='0%';requestAnimationFrame(()=>{fill.style.width=pct+'%';}); // grow-in
   if(String(k)===String(p.class_id))fill.classList.add('best');
   track.append(fill);row.append(track,make('span','sb-val',v.toFixed(2)));sb.append(row);}
  // Кадры-обоснования процесса
