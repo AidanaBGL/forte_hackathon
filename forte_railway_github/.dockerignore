@@ -3,14 +3,15 @@
 .venv
 __pycache__
 *.pt
-*.pth
-*.onnx
 *.mov
 *.mp4
 *.zip
 *.sqlite3
 storage
 runs
-worker
-models
 *.csv
+# All-in-one image ships the worker + exported CPU models.
+# Keep .onnx out of the context EXCEPT the exported models under models/.
+*.onnx
+!models/*.onnx
+!models/**/*.onnx

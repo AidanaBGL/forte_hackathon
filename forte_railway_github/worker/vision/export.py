@@ -93,6 +93,8 @@ def export_action(checkpoint, out_dir, fmt, name, opset):
         produced.append(xml_path)
         if fmt == 'openvino':
             onnx_path.unlink(missing_ok=True)
+            # torch may emit weights to an external-data sidecar; remove it too so no orphan is left.
+            onnx_path.with_name(onnx_path.name + '.data').unlink(missing_ok=True)
             produced = [xml_path]
     return produced
 

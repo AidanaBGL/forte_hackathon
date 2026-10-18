@@ -145,6 +145,32 @@ The action net picks a backend from the file extension: `.pt`→PyTorch, `.onnx`
 all metadata comes from the `*.meta.json` sidecar. Expect a noticeably larger per-video wall
 time than the V100; keep `FORTE_MAX_DURATION_SEC` within the ~300 s contest budget and measure.
 
+### 3c. Run the models ON Railway (all-in-one, no separate server)
+
+With the models exported to ONNX you can host **everything on Railway in one service** — the
+API/UI gateway and the CPU worker share a single container (`start-allinone.sh` runs both;
+the worker polls the gateway over loopback). No V100 and no second service.
+
+1. Export to ONNX and drop the files into `models/` (see section 3b and `models/README.md`):
+   ```bash
+   python -m worker.vision.export --detector best.pt --action action_best.pt \
+       --out models --format onnx --imgsz 640
+   git add -f models/best.onnx models/action.onnx models/action.meta.json
+   git commit -m "Add exported CPU models"
+   git push
+   ```
+2. Railway rebuilds from the updated `Dockerfile` (it now installs CPU torch + ultralytics +
+   onnxruntime, and copies `worker/` + `models/`).
+3. Set the env vars from `.env.railway.example` — notably `FORTE_DETECTOR_WEIGHTS=/app/models/best.onnx`,
+   `FORTE_ACTION_CHECKPOINT=/app/models/action.onnx`, `FORTE_DETECTOR_IMGSZ=640`. `FORTE_GATEWAY_URL`
+   and `FORTE_DEVICE=cpu` are set by the entrypoint automatically.
+
+**Pick a plan with enough RAM** — torch + ultralytics + both models + video decode need roughly
+1.5–2 GB; CPU inference is much slower than the V100, so keep clips/`FORTE_MAX_DURATION_SEC` modest
+and measure against the ~300 s budget. The image is larger (~1.5 GB) due to the CPU torch wheel.
+Note the compliance caveat in section 5 still applies: this now runs the actual ML inference on
+third-party cloud, not just file hosting.
+
 ## 4. Jury API exactly as required
 
 ```bash

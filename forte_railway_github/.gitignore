@@ -12,3 +12,7 @@ storage/
 runs/
 dataset/
 *.zip
+# Keep the exported CPU models (committed so Railway can build them into the image).
+!models/*.onnx
+!models/**/*.onnx
+
