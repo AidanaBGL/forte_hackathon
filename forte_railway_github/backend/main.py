@@ -61,7 +61,7 @@ def create_app(config: Config|None=None):
             raise HTTPException(401,'Invalid or missing X-API-Key')
 
     def check_worker(x_worker_key:str|None=Header(default=None,alias='X-Worker-Key')):
-        if not x_worker_key or not hmac.compare_digest(x_worker_key,cfg.worker_key):
+        if not x_worker_key or not hmac.compare_digest(x_worker_key,cfg.internal_key):
             raise HTTPException(401,'Invalid worker credentials')
 
     def row_or_404(job_id):

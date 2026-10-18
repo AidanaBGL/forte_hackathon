@@ -2,7 +2,7 @@
 
 1. Загрузи этот проект в **приватный GitHub-репозиторий**.
 2. В Railway нажми **Deploy from GitHub**, выбери репозиторий.
-3. Задай переменные `FORTE_API_KEY`, `FORTE_WORKER_KEY`, `FORTE_STORAGE_DIR=/data`, `FORTE_SAVE_VIDEOS=1` (или `0` для автоматического удаления файлов после обработки).
+3. Задай переменные `FORTE_API_KEY` (единственный обязательный ключ — его же отдаёшь жюри), `FORTE_STORAGE_DIR=/data`, `FORTE_SAVE_VIDEOS=1` (или `0` для автоматического удаления файлов после обработки). `FORTE_WORKER_KEY` — необязательный, нужен только если worker крутится отдельным недоверенным сервисом.
 4. Прикрепи Railway Volume к `/data`, создай публичный домен и проверь `/health`.
 5. На своём сервере V100 в активном CUDA-окружении задай `FORTE_GATEWAY_URL`, `FORTE_WORKER_KEY`, `FORTE_DETECTOR_WEIGHTS`, `FORTE_ACTION_CHECKPOINT` и запусти:
 

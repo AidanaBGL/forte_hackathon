@@ -27,9 +27,11 @@ def request_or_raise(session, method, url, **kwargs):
 
 def run_worker(once=False):
     gateway=os.environ.get('FORTE_GATEWAY_URL','').rstrip('/')
-    secret=os.environ.get('FORTE_WORKER_KEY','')
+    # FORTE_WORKER_KEY is optional; without it the worker authenticates with FORTE_API_KEY
+    # (the gateway's /internal routes fall back to the same key — see Config.internal_key).
+    secret=os.environ.get('FORTE_WORKER_KEY') or os.environ.get('FORTE_API_KEY','')
     if not gateway.startswith(('https://','http://')) or len(secret)<16:
-        raise RuntimeError('Set FORTE_GATEWAY_URL and FORTE_WORKER_KEY')
+        raise RuntimeError('Set FORTE_GATEWAY_URL and FORTE_API_KEY (or FORTE_WORKER_KEY)')
     if gateway.startswith('http://') and not gateway.startswith('http://localhost') and not gateway.startswith('http://127.0.0.1'):
         raise RuntimeError('Use HTTPS for a remote Railway gateway')
     if not os.environ.get('FORTE_DETECTOR_WEIGHTS'):
