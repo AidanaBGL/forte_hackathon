@@ -1,0 +1,14 @@
+{
+  "name": "e00_y26n_baseline",
+  "checkpoint": "/hdd/home/ABaglanova/forte_hack/forte_object_detection_benchmark/runs/detection/e00_y26n_baseline/weights/best.pt",
+  "model": "yolo26n.pt",
+  "optimizer": "AdamW",
+  "aug": "none",
+  "imgsz": 640,
+  "batch": 4,
+  "wall_seconds": 840.22,
+  "precision": 0.8764963286802799,
+  "recall": 0.8628924192686364,
+  "map50": 0.8969885135667025,
+  "map50_95": 0.7227991490500802
+}

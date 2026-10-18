@@ -1,0 +1,5 @@
+video_id,gt_violation,gt_time_sec,pred_violation,score,threshold,candidate_time_sec,abs_time_error_sec,evidence_path
+X-15,1,15,1,0.74185,0.1,17.0,2.0,runs/e1_smoke_fast/evidence/X-15_candidate.jpg
+X-16,0,,1,0.60681,0.1,7.0,,runs/e1_smoke_fast/evidence/X-16_candidate.jpg
+X-22,1,14,1,0.79668,0.1,17.0,3.0,runs/e1_smoke_fast/evidence/X-22_candidate.jpg
+X-23,0,,1,0.75903,0.1,12.0,,runs/e1_smoke_fast/evidence/X-23_candidate.jpg

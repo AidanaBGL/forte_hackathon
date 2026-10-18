@@ -1,0 +1,196 @@
+{
+  "classes": {
+    "0": "cash",
+    "1": "cash_bag",
+    "2": "close_door",
+    "3": "close_laptop",
+    "4": "counting_machine",
+    "5": "id",
+    "6": "open_door",
+    "7": "open_laptop",
+    "8": "other",
+    "9": "person",
+    "10": "phone",
+    "11": "safe"
+  },
+  "split_counts": {
+    "train": 701,
+    "val": 200,
+    "test": 99
+  },
+  "instances": [
+    {
+      "split": "test",
+      "class": "cash",
+      "count": 38
+    },
+    {
+      "split": "test",
+      "class": "cash_bag",
+      "count": 7
+    },
+    {
+      "split": "test",
+      "class": "close_door",
+      "count": 92
+    },
+    {
+      "split": "test",
+      "class": "close_laptop",
+      "count": 2
+    },
+    {
+      "split": "test",
+      "class": "counting_machine",
+      "count": 120
+    },
+    {
+      "split": "test",
+      "class": "id",
+      "count": 14
+    },
+    {
+      "split": "test",
+      "class": "open_door",
+      "count": 7
+    },
+    {
+      "split": "test",
+      "class": "open_laptop",
+      "count": 97
+    },
+    {
+      "split": "test",
+      "class": "other",
+      "count": 9
+    },
+    {
+      "split": "test",
+      "class": "person",
+      "count": 135
+    },
+    {
+      "split": "test",
+      "class": "safe",
+      "count": 98
+    },
+    {
+      "split": "train",
+      "class": "cash",
+      "count": 234
+    },
+    {
+      "split": "train",
+      "class": "cash_bag",
+      "count": 36
+    },
+    {
+      "split": "train",
+      "class": "close_door",
+      "count": 640
+    },
+    {
+      "split": "train",
+      "class": "close_laptop",
+      "count": 17
+    },
+    {
+      "split": "train",
+      "class": "counting_machine",
+      "count": 853
+    },
+    {
+      "split": "train",
+      "class": "id",
+      "count": 66
+    },
+    {
+      "split": "train",
+      "class": "open_door",
+      "count": 59
+    },
+    {
+      "split": "train",
+      "class": "open_laptop",
+      "count": 684
+    },
+    {
+      "split": "train",
+      "class": "other",
+      "count": 45
+    },
+    {
+      "split": "train",
+      "class": "person",
+      "count": 1002
+    },
+    {
+      "split": "train",
+      "class": "phone",
+      "count": 2
+    },
+    {
+      "split": "train",
+      "class": "safe",
+      "count": 697
+    },
+    {
+      "split": "val",
+      "class": "cash",
+      "count": 67
+    },
+    {
+      "split": "val",
+      "class": "cash_bag",
+      "count": 13
+    },
+    {
+      "split": "val",
+      "class": "close_door",
+      "count": 180
+    },
+    {
+      "split": "val",
+      "class": "close_laptop",
+      "count": 12
+    },
+    {
+      "split": "val",
+      "class": "counting_machine",
+      "count": 242
+    },
+    {
+      "split": "val",
+      "class": "id",
+      "count": 21
+    },
+    {
+      "split": "val",
+      "class": "open_door",
+      "count": 17
+    },
+    {
+      "split": "val",
+      "class": "open_laptop",
+      "count": 188
+    },
+    {
+      "split": "val",
+      "class": "other",
+      "count": 19
+    },
+    {
+      "split": "val",
+      "class": "person",
+      "count": 284
+    },
+    {
+      "split": "val",
+      "class": "safe",
+      "count": 198
+    }
+  ],
+  "issues": [],
+  "duplicate_images": [],
+  "potential_video_leaks": []
+}

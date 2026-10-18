@@ -1,0 +1,34 @@
+{
+  "version": "experimental-1",
+  "disclaimer": "These procedure sequences were proposed from sample videos. Only clauses from confirmed National Bank regulations may be described as normative. Missing video evidence does not prove the step was omitted.",
+  "0": {
+    "label": "Приём наличных от клиента",
+    "order_edges": [["document_handover", "cash_handover"], ["cash_handover", "cash_counting_machine"], ["cash_counting_machine", "cash_storage"]],
+    "possible_checks": ["client present during counting", "cash from previous transaction not visible on work surface", "documents and cash follow permitted route"],
+    "rule_refs": ["C01", "C03"], "status": "hypothesis_partial"
+  },
+  "1": {
+    "label": "Внутренний пересчёт наличных",
+    "order_edges": [["cash_counting_machine", "cash_storage"]],
+    "possible_checks": ["counting machine used", "no cash left outside storage at end", "safe door condition"],
+    "rule_refs": ["C09", "H01"], "status": "hypothesis_partial"
+  },
+  "2": {
+    "label": "Вход в кассовое помещение",
+    "order_edges": [["door_open", "door_closed"]],
+    "possible_checks": ["person enters", "door state after entry"],
+    "rule_refs": ["C14"], "status": "hypothesis_partial"
+  },
+  "3": {
+    "label": "Выход из кассового помещения",
+    "order_edges": [["laptop_closed", "cashier_leaving"], ["safe_closing", "cashier_leaving"]],
+    "possible_checks": ["no visible cash at workstation", "safe door closed", "laptop visually closed"],
+    "rule_refs": ["H02", "C13"], "status": "hypothesis_partial"
+  },
+  "4": {
+    "label": "Приём и обработка упаковки с наличными",
+    "order_edges": [["cashbag_handover", "cash_counting_machine"], ["cash_counting_machine", "cash_storage"]],
+    "possible_checks": ["package opened and contents handled", "counting procedure", "cash stored"],
+    "rule_refs": ["C07", "C09", "H03"], "status": "hypothesis_partial"
+  }
+}

@@ -1,0 +1,16 @@
+.git
+.env
+.venv
+__pycache__
+*.pt
+*.pth
+*.onnx
+*.mov
+*.mp4
+*.zip
+*.sqlite3
+storage
+runs
+worker
+models
+*.csv

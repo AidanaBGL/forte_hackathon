@@ -1,0 +1,6 @@
+# Install torch + torchvision compatible with your CUDA separately; do NOT override working GPU torch.
+opencv-python-headless>=4.8
+numpy>=1.26
+pandas>=2.0
+scikit-learn>=1.3
+tqdm>=4.65

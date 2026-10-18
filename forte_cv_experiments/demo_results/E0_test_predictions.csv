@@ -1,0 +1,5 @@
+video_id,gt_violation,gt_time_sec,pred_violation,score,threshold,candidate_time_sec,abs_time_error_sec,evidence_path
+X-15,1,15,1,0.6971,0.35,,,
+X-16,0,,1,0.64591,0.35,,,
+X-22,1,14,1,0.63892,0.35,,,
+X-23,0,,1,0.80315,0.35,,,

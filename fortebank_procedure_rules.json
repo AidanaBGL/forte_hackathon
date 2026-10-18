@@ -1,0 +1,349 @@
+{
+  "title": "ForteBank Datathon 26 — Video Procedural Checks",
+  "version": "0.1-research",
+  "as_of": "2026-10-17",
+  "purpose": "Локальный эксперимент с Qwen3.5; не является юридическим заключением или внутренней инструкцией ForteBank.",
+  "sources": {
+    "NB231": {
+      "title": "Правила кассовых операций и инкассации, постановление НБ РК №231 от 29.11.2019, редакция 2026",
+      "url": "https://old.adilet.zan.kz/rus/docs/V1900019680"
+    },
+    "NB14": {
+      "title": "Правила организации охраны и устройства помещений банков, постановление НБ РК №14 от 24.02.2020",
+      "url": "https://old.adilet.zan.kz/rus/docs/V2000020075"
+    },
+    "FORTE": {
+      "title": "ForteBank: Правила об общих условиях осуществления банковских и иных операций, редакция 16.09.2026",
+      "url": "https://prod-one-strapi.s3.eu-north-1.amazonaws.com/Pravila_ob_obshhih_usloviyah_bankovskih_i_inyh_operaczijs_Izm_SD_36_z_ot160926_dc368384cd.pdf"
+    },
+    "CASE": {
+      "title": "Datathon 26 ForteBank: техническое задание, предоставленное организатором",
+      "url": null
+    }
+  },
+  "procedures": [
+    {
+      "id": "C01",
+      "title_ru": "Приём наличных от клиента",
+      "requirement_summary": "Приходный кассовый документ; визуальная идентификация клиента; приём и пересчёт денег с проверкой; сверка суммы; оформление и выдача подтверждения. Пересчёт — в присутствии клиента.",
+      "visual_actions": [
+        "client_present",
+        "document_presented",
+        "cash_received",
+        "cash_counted",
+        "cash_verified",
+        "receipt_handed_to_client"
+      ],
+      "source_id": "NB231",
+      "clauses": [
+        "17-21"
+      ],
+      "rule_status": "normative",
+      "notes": "Не делайте вывод о подписи, подлинности или совпадении суммы по одному видео.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "C02",
+      "title_ru": "Раздельный приём по приходным документам",
+      "requirement_summary": "Наличные по разным приходным документам принимаются отдельно.",
+      "visual_actions": [
+        "cash_bundles_separated",
+        "cash_counted"
+      ],
+      "source_id": "NB231",
+      "clauses": [
+        "21"
+      ],
+      "rule_status": "normative",
+      "notes": "Нужна достоверная привязка к разным документам.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "C03",
+      "title_ru": "Сохранность денег предыдущего клиента",
+      "requirement_summary": "На рабочем месте кассира должны находиться деньги обслуживаемого клиента; ранее принятые деньги хранятся в специальных закрывающихся на ключ устройствах.",
+      "visual_actions": [
+        "previous_client_cash_on_table",
+        "cash_put_in_safe",
+        "safe_open",
+        "safe_closed"
+      ],
+      "source_id": "NB231",
+      "clauses": [
+        "20"
+      ],
+      "rule_status": "normative",
+      "notes": "Открытая дверца визуально проверяема; запирание ключом по видео может быть не видно.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "C04",
+      "title_ru": "Не покидать место до завершения обслуживания клиента",
+      "requirement_summary": "Кассовому работнику нельзя покидать рабочее место до окончания обслуживания клиента.",
+      "visual_actions": [
+        "cashier_leaves",
+        "client_present",
+        "service_in_progress"
+      ],
+      "source_id": "NB231",
+      "clauses": [
+        "22"
+      ],
+      "rule_status": "normative",
+      "notes": "Нужно установить, что обслуживание ещё продолжается.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "C05",
+      "title_ru": "Выдача наличных клиенту",
+      "requirement_summary": "На основании расходного кассового документа: идентификация, необходимые проверки подписи, подготовка суммы, пересчёт в присутствии клиента, выдача и подтверждение.",
+      "visual_actions": [
+        "client_present",
+        "id_document_presented",
+        "cash_prepared",
+        "cash_counted",
+        "cash_handed_to_client",
+        "receipt_handed_to_client"
+      ],
+      "source_id": "NB231",
+      "clauses": [
+        "28-31"
+      ],
+      "rule_status": "normative",
+      "notes": "Выдача без видимого пересчёта подозрительна лишь при полной наблюдаемости этого этапа.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "C06",
+      "title_ru": "Размен и обмен наличных",
+      "requirement_summary": "Размен/обмен с проверкой подлинности и платёжности; конкретный порядок устанавливается внутренними документами банка.",
+      "visual_actions": [
+        "cash_exchanged",
+        "cash_verified"
+      ],
+      "source_id": "NB231",
+      "clauses": [
+        "34-36"
+      ],
+      "rule_status": "normative",
+      "notes": "Не приравнивать обмен к приёму вклада или выдаче наличных.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "C07",
+      "title_ru": "Приём сумки от инкассаторов",
+      "requirement_summary": "Наличие препроводительного документа; регистрация суммы; проверка целостности и пломбирования сумки.",
+      "visual_actions": [
+        "courier_arrives",
+        "bag_received",
+        "bag_inspected",
+        "seal_inspected"
+      ],
+      "source_id": "NB231",
+      "clauses": [
+        "24"
+      ],
+      "rule_status": "normative",
+      "notes": "Невозможно подтвердить корректность документов или регистрации без чтения соответствующих данных.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "C08",
+      "title_ru": "Повреждённая сумка от инкассаторов",
+      "requirement_summary": "При обнаружении повреждения сумки предусмотрены вскрытие и пересчёт в присутствии работника инкассации; при расхождениях составляется акт.",
+      "visual_actions": [
+        "bag_damaged",
+        "bag_opened",
+        "cash_counted",
+        "courier_present"
+      ],
+      "source_id": "NB231",
+      "clauses": [
+        "25"
+      ],
+      "rule_status": "normative",
+      "notes": "Не выводить повреждение пломбы из самого факта вскрытия сумки.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "C09",
+      "title_ru": "Пересчёт, сортировка, упаковка",
+      "requirement_summary": "Пересчёт и сортировка на соответствующем оборудовании; присутствие контролирующего работника, кроме приёма/выдачи клиентам.",
+      "visual_actions": [
+        "counting_machine_used",
+        "cash_sorted",
+        "second_staff_present",
+        "cash_packed"
+      ],
+      "source_id": "NB231",
+      "clauses": [
+        "41-45"
+      ],
+      "rule_status": "normative",
+      "notes": "Ключевое исключение: контролёр не обязателен по этому пункту для обычного приёма/выдачи наличных клиенту.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "C10",
+      "title_ru": "Упаковка банкнот и монет",
+      "requirement_summary": "Разделение денежных знаков по видам, номиналам и состоянию; установленные требования к пачкам, корешкам, пакетам, ярлыкам.",
+      "visual_actions": [
+        "banknotes_sorted",
+        "bundles_formed",
+        "plastic_package_sealed",
+        "label_added"
+      ],
+      "source_id": "NB231",
+      "clauses": [
+        "43-56"
+      ],
+      "rule_status": "normative",
+      "notes": "Не объявлять несоответствие ярлыка, если текст ярлыка не читается.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "C11",
+      "title_ru": "Проверка сомнительных и неплатёжных банкнот",
+      "requirement_summary": "При выявлении сомнительных, неплатёжных и потенциально поддельных банкнот применяются специальные процедуры.",
+      "visual_actions": [
+        "banknote_inspected",
+        "suspicious_banknote_separated"
+      ],
+      "source_id": "NB231",
+      "clauses": [
+        "57-63"
+      ],
+      "rule_status": "normative",
+      "notes": "Видео не доказывает подлинность банкноты и фактический результат аппаратной проверки.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "C12",
+      "title_ru": "Завершение кассового дня",
+      "requirement_summary": "Остатки денег пересчитываются, сортируются и сдаются; заведующий кассой формирует сводные документы и сверяет обороты.",
+      "visual_actions": [
+        "cash_counted",
+        "cash_sorted",
+        "cash_packed",
+        "cash_handed_over"
+      ],
+      "source_id": "NB231",
+      "clauses": [
+        "23",
+        "37",
+        "64-65"
+      ],
+      "rule_status": "normative",
+      "notes": "Закрытие ноутбука не является установленным здесь обязательным шагом.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "C13",
+      "title_ru": "Хранение денег и доступ к хранилищу",
+      "requirement_summary": "Хранение в кладовой/сейфовой комнате после учёта в автоматизированной цифровой системе; доступ уполномоченных лиц; порядок ключей и кодов — внутренний документ.",
+      "visual_actions": [
+        "cash_placed_in_safe",
+        "safe_open",
+        "safe_closed",
+        "person_enters_vault"
+      ],
+      "source_id": "NB231",
+      "clauses": [
+        "74-80"
+      ],
+      "rule_status": "normative",
+      "notes": "Ввод на клавиатуре не доказывает бухгалтерскую проводку, а отсутствие набора текста не доказывает её отсутствие.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "C14",
+      "title_ru": "Охрана кассовых помещений",
+      "requirement_summary": "Правила охраны и устройства банковских помещений (не персональная последовательность действий кассира).",
+      "visual_actions": [
+        "security_door_open",
+        "person_enters_cash_area"
+      ],
+      "source_id": "NB14",
+      "clauses": [
+        "1",
+        "3"
+      ],
+      "rule_status": "normative",
+      "notes": "Нужен контекст: вид помещения и полномочия лица нельзя надёжно вывести из видеозаписи.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "F01",
+      "title_ru": "Приём/выдача по указанию клиента в ForteBank",
+      "requirement_summary": "Приём и выдача наличных со счёта осуществляются по указанию клиента согласно договору, внутренним документам и законодательству.",
+      "visual_actions": [
+        "client_present",
+        "cash_received",
+        "cash_handed_to_client"
+      ],
+      "source_id": "FORTE",
+      "clauses": [
+        "глава 4, пункт 10"
+      ],
+      "rule_status": "forte_public",
+      "notes": "Документ не задаёт порядок закрытия сейфа или ноутбука.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "H01",
+      "title_ru": "Изъятие денег из сейфа для пересчёта",
+      "requirement_summary": "Гипотеза для датасета: открыть сейф → достать деньги → закрыть дверцу → начать пересчёт.",
+      "visual_actions": [
+        "safe_open",
+        "cash_retrieved",
+        "safe_closed",
+        "cash_counted"
+      ],
+      "source_id": "CASE",
+      "clauses": [],
+      "rule_status": "hypothesis_only",
+      "notes": "Нет найденной публичной нормы об обязательном закрытии дверцы непосредственно до начала пересчёта.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "H02",
+      "title_ru": "Уход кассира с рабочего места",
+      "requirement_summary": "Гипотеза: перед уходом закрыть дверцу сейфа и привести компьютер в безопасное состояние.",
+      "visual_actions": [
+        "cashier_leaves",
+        "safe_closed",
+        "laptop_lid_closed"
+      ],
+      "source_id": "CASE",
+      "clauses": [],
+      "rule_status": "hypothesis_only",
+      "notes": "Физическое закрытие ноутбука не тождественно блокировке пользовательской сессии. Не выдавать за закон.",
+      "video_applicability": "conditional"
+    },
+    {
+      "id": "H03",
+      "title_ru": "Вскрытие новой упаковки банкнот",
+      "requirement_summary": "Гипотеза: открыть упаковку → извлечь деньги → пересчитать на машинке → поместить на хранение.",
+      "visual_actions": [
+        "package_opened",
+        "cash_removed_from_package",
+        "counting_machine_used",
+        "cash_put_in_safe"
+      ],
+      "source_id": "CASE",
+      "clauses": [],
+      "rule_status": "hypothesis_only",
+      "notes": "Не путать фабричную/банковскую упаковку со специальной инкассаторской сумкой.",
+      "video_applicability": "conditional"
+    }
+  ],
+  "critical_constraints": [
+    "Не распознавать и не идентифицировать лица.",
+    "Не использовать облачные модели или API для обработки видео.",
+    "Не утверждать невидимые факты: бухгалтерская проводка, подлинность банкнот, блокировка сессии, полномочия клиента.",
+    "Пропущенный шаг при обрезанном начале/конце не доказывает нарушения.",
+    "Нормативное основание для legal violation только подтверждённый релевантный пункт, без выдумывания обязательного порядка.",
+    "Разделять кассовую операцию с клиентом и служебный пересчёт/сортировку.",
+    "При API-ответе использовать только verdict=no_violation/violation и формат из ТЗ."
+  ]
+}

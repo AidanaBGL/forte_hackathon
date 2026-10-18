@@ -1,0 +1,8 @@
+video,gt_actions,pred_actions,exact_set_match
+-43.mp4,cash_counting_machine,open door,0
+-21.mp4,cash_counting_machine | safe_closing,computer_interaction | safe_closing,0
+-24.mp4,cashier_leaving | safe_closing,cashier_leaving | safe_closing,1
+-26.mp4,cashier_leaving | safe_closing,cashier_leaving | safe_closing,1
+-34.mp4,cash_counting_machine | cash_handover,cash_handover | open door,0
+-38.mp4,cash_counting_machine | cash_handover,cash_handover | open door,0
+-44.mp4,cash_counting_machine,open door,0

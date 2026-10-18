@@ -1,0 +1,80 @@
+The user wants a JSON analysis of the provided video frames based on specific banking rules (NB231, etc.).
+
+**1. Analyze the Video Content:**
+*   **0.00s - 1.74s:** A woman (cashier) is sitting at a desk with a laptop. A man (client) enters through the glass door.
+*   **1.74s - 5.18s:** The man walks up to the desk. He is holding something (looks like a phone or a small object, possibly a document or card, but it's hard to be certain).
+*   **5.18s - 6.92s:** The man places an object on the desk. It looks like a small white packet or envelope.
+*   **6.92s - 8.62s:** The man hands the object to the woman. She takes it.
+*   **8.62s - 12.10s:** The woman is holding the object. She seems to be opening it or inspecting it. It looks like a small white packet.
+*   **12.10s - 15.54s:** The woman is manipulating the object. It looks like she might be taking something out or just holding it. The man is watching.
+*   **15.54s - 20.72s:** The woman is still holding the object. She seems to be counting or checking something inside it. It's not clearly cash yet, but given the context of a bank, it's likely cash or a document. Wait, looking closely at 13.80s and 15.54s, she is holding a small white rectangular object. It looks like a stack of banknotes wrapped in a band or a small envelope.
+*   **20.72s - 22.46s:** She is still handling the object.
+*   **22.46s - 24.16s:** She places the object back on the desk or hands it back? No, she seems to be counting or organizing it.
+*   **24.16s - 25.90s:** The man is still standing there. The woman is looking at the laptop screen.
+
+**Re-evaluating the object:**
+At 6.92s, the man hands a small white packet to the woman.
+At 8.62s, she takes it.
+At 13.80s, she is holding it with both hands. It looks like a small stack of cash or a document.
+At 22.46s, she is still holding it.
+At 24.16s, she puts it down on the desk? Or is she just holding it near the desk?
+Actually, looking at the sequence:
+- Man enters.
+- Man hands a small white packet/envelope to the cashier.
+- Cashier takes it.
+- Cashier inspects/opens it.
+- Cashier seems to be counting or checking the contents.
+- The man waits.
+
+**2. Map to Procedures:**
+*   **C01 (Приём наличных от клиента):** The man hands something to the cashier. She inspects it. This looks like a cash deposit or document submission.
+*   **C05 (Выдача наличных клиенту):** Unlikely, as the man hands something *to* her first.
+*   **C04 (Не покидать место...):** The cashier stays seated. The man stays standing. No one leaves.
+
+**3. Check for Violations:**
+*   **C04 (Leaving workstation):** The cashier remains seated throughout the clip. No violation.
+*   **C01 (Cash receiving):**
+    *   *Visual actions:* Client present (yes), document/cash presented (yes, white packet), cash received (yes), cash counted (uncertain, she is handling it, but is it counting? It looks like she is inspecting a small packet).
+    *   *Rule:* "Пересчёт — в присутствии клиента" (Counting in presence of client). The client is present.
+    *   *Observation:* She is handling the item. It's hard to say definitively if she is counting cash or just checking a document. However, the interaction fits the "receiving" pattern.
+*   **C03 (Previous client cash):** No previous client cash is visible on the table. The table is relatively clear except for the printer and the item being handled.
+*   **C09 (Counting machine):** No counting machine is used. She is handling it manually. This is allowed for small amounts or specific procedures, but usually, counting machines are preferred. However, without knowing the amount, manual counting isn't a violation per se unless the rule mandates a machine for *all* amounts (which usually isn't the case for small deposits).
+*   **H01/H02/H03:** These are hypotheses.
+    *   H02 (Leaving workstation): She doesn't leave.
+    *   H01 (Safe): No safe interaction is visible.
+
+**4. Specific Observations:**
+*   **0.00s:** Cashier at desk.
+*   **1.74s:** Man enters.
+*   **5.18s:** Man approaches desk.
+*   **6.92s:** Man hands a white packet/object to cashier.
+*   **8.62s:** Cashier takes the object.
+*   **13.80s:** Cashier is holding the object, possibly opening it.
+*   **22.46s:** Cashier is still holding/inspecting the object.
+*   **25.90s:** Cashier is looking at the laptop.
+
+**5. Potential Violations Analysis:**
+*   Is there a violation of **C01**? The rule requires counting in the presence of the client. The client is present. She is handling the item. It's not clear if she is counting.
+*   Is there a violation of **C04**? No, she stays.
+*   Is there a violation regarding **Safe**? No safe interaction is seen.
+*   Is there a violation regarding **Laptop**? The laptop is open and active. This is normal for processing a transaction.
+
+**6. Conclusion:**
+The video shows a client approaching a cashier and handing over an item (likely cash or a document). The cashier accepts it and inspects it. The client remains present. There is no clear evidence of a violation. The process seems to be "Cash Receiving" (C01) or "Document Submission". Since the item is small and white, it could be a small stack of cash or an envelope.
+
+Let's look closer at the item. At 6.92s, it looks like a small white envelope or a stack of banknotes wrapped in a band. At 13.80s, she is holding it with both hands, fingers moving as if counting or checking.
+The man is standing right there.
+The cashier is looking at the laptop at the end (25.90s), likely entering data.
+
+**Timeline Construction:**
+*   0.00 - 1.74: Cashier waiting.
+*   1.74 - 5.18: Client enters and approaches.
+*   5.18 - 6.92: Client hands item to cashier.
+*   6.92 - 25.90: Cashier inspects/handles item. Client waits.
+
+**Violations:**
+*   None observed. The cashier stays at the desk. The client is present during the handling.
+
+**JSON Structure:**
+*   `video_id`: "X-1"
+*   `clip_partial_start`: true (Client enters mid-clip? No, he enters at 1.74s, so the start is partial relative to his arrival, but the clip starts at 0.00). Actually, the clip starts with the cashier alone, then the client enters. So `clip_partial_start` is false regarding the *event* start, but true regarding the *video* (it's a 25s clip). Wait, the instruction says "clip

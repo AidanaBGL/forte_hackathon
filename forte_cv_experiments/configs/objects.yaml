@@ -1,0 +1,11 @@
+path: datasets/objects
+train: images/train
+val: images/val
+names:
+  0: banknotes
+  1: cash_bundle
+  2: cash_bag
+  3: safe_door_open
+  4: safe_door_closed
+  5: counting_machine
+  6: document

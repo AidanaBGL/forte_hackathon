@@ -1,0 +1,11 @@
+,cash_counting_machine,cash_handover,cash_storage,cashbag_handover,cashier_leaving,close door,computer_interaction,document_handover,open door,safe_closing
+cash_counting_machine,0,3,0,0,0,2,1,0,0,0
+cash_handover,0,3,0,0,0,0,0,0,0,0
+cash_storage,0,0,0,0,0,0,0,0,0,0
+cashbag_handover,0,0,0,0,0,0,0,0,0,0
+cashier_leaving,0,0,0,0,2,0,0,0,0,0
+close door,0,0,0,0,0,0,0,0,0,0
+computer_interaction,0,0,0,0,0,0,0,0,0,0
+document_handover,0,0,0,0,0,0,0,0,0,0
+open door,0,0,0,0,0,0,0,0,0,0
+safe_closing,0,0,0,0,0,0,0,0,0,3

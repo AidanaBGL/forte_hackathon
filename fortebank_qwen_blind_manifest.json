@@ -1,0 +1,274 @@
+{
+  "title": "ForteBank Video Procedural Mistake Detection — blind test configuration",
+  "disclaimer": "This manifest intentionally does not include any ground-truth verdict or ground-truth timestamp.",
+  "video_ids": [
+    {
+      "id": "X-1",
+      "filename": "X-1.mov",
+      "duration_sec": 25.93
+    },
+    {
+      "id": "X-2",
+      "filename": "X-2.mov",
+      "duration_sec": 17.07
+    },
+    {
+      "id": "X-3",
+      "filename": "X-3.mov",
+      "duration_sec": 20.03
+    },
+    {
+      "id": "X-4",
+      "filename": "X-4.mov",
+      "duration_sec": 72.7
+    },
+    {
+      "id": "X-5",
+      "filename": "X-5.mov",
+      "duration_sec": 71.6
+    },
+    {
+      "id": "X-8",
+      "filename": "X-8.mov",
+      "duration_sec": 38.03
+    },
+    {
+      "id": "X-10",
+      "filename": "X-10.mov",
+      "duration_sec": 15.57
+    },
+    {
+      "id": "X-11",
+      "filename": "X-11.mov",
+      "duration_sec": 25.6
+    },
+    {
+      "id": "X-12",
+      "filename": "X-12.mov",
+      "duration_sec": 42.3
+    },
+    {
+      "id": "X-13",
+      "filename": "X-13.mov",
+      "duration_sec": 65.3
+    },
+    {
+      "id": "X-14",
+      "filename": "X-14.mov",
+      "duration_sec": 142.53
+    },
+    {
+      "id": "X-15",
+      "filename": "X-15.mov",
+      "duration_sec": 20.87
+    },
+    {
+      "id": "X-16",
+      "filename": "X-16.mov",
+      "duration_sec": 22.73
+    },
+    {
+      "id": "X-17",
+      "filename": "X-17.mov",
+      "duration_sec": 14.73
+    },
+    {
+      "id": "X-18",
+      "filename": "X-18.mov",
+      "duration_sec": 22.6
+    },
+    {
+      "id": "X-19",
+      "filename": "X-19.mov",
+      "duration_sec": 57.43
+    },
+    {
+      "id": "X-20",
+      "filename": "X-20.mov",
+      "duration_sec": 11.63
+    },
+    {
+      "id": "X-21",
+      "filename": "X-21.mov",
+      "duration_sec": 19.6
+    },
+    {
+      "id": "X-22",
+      "filename": "X-22.mov",
+      "duration_sec": 21.03
+    },
+    {
+      "id": "X-23",
+      "filename": "X-23.mov",
+      "duration_sec": 18.27
+    },
+    {
+      "id": "X-24",
+      "filename": "X-24.mov",
+      "duration_sec": 14.7
+    },
+    {
+      "id": "X-25",
+      "filename": "X-25.mov",
+      "duration_sec": 31.7
+    },
+    {
+      "id": "X-26",
+      "filename": "X-26.mov",
+      "duration_sec": 19.8
+    },
+    {
+      "id": "X-27",
+      "filename": "X-27.mov",
+      "duration_sec": 26.43
+    },
+    {
+      "id": "X-28",
+      "filename": "X-28.mov",
+      "duration_sec": 16.53
+    },
+    {
+      "id": "X-29",
+      "filename": "X-29.mov",
+      "duration_sec": 17.3
+    },
+    {
+      "id": "X-30",
+      "filename": "X-30.mov",
+      "duration_sec": 18.8
+    },
+    {
+      "id": "X-31",
+      "filename": "X-31.mov",
+      "duration_sec": 23.8
+    },
+    {
+      "id": "X-32",
+      "filename": "X-32.mov",
+      "duration_sec": 21.3
+    },
+    {
+      "id": "X-33",
+      "filename": "X-33.mov",
+      "duration_sec": 14.33
+    },
+    {
+      "id": "X-34",
+      "filename": "X-34.mov",
+      "duration_sec": 17.73
+    },
+    {
+      "id": "X-35",
+      "filename": "X-35.mov",
+      "duration_sec": 56.77
+    },
+    {
+      "id": "X-37",
+      "filename": "X-37.mov",
+      "duration_sec": 15.87
+    },
+    {
+      "id": "X-38",
+      "filename": "X-38.mov",
+      "duration_sec": 58.97
+    },
+    {
+      "id": "X-39",
+      "filename": "X-39.mov",
+      "duration_sec": 78.73
+    },
+    {
+      "id": "X-40",
+      "filename": "X-40.mov",
+      "duration_sec": 25.27
+    },
+    {
+      "id": "X-43",
+      "filename": "X-43.mov",
+      "duration_sec": 23.37
+    },
+    {
+      "id": "X-44",
+      "filename": "X-44.mov",
+      "duration_sec": 20.43
+    },
+    {
+      "id": "X-45",
+      "filename": "X-45.mov",
+      "duration_sec": 33.33
+    },
+    {
+      "id": "X-46",
+      "filename": "X-46.mov",
+      "duration_sec": 19.13
+    },
+    {
+      "id": "X-47",
+      "filename": "X-47.mov",
+      "duration_sec": 72.7
+    },
+    {
+      "id": "X-48",
+      "filename": "X-48.mov",
+      "duration_sec": 71.6
+    }
+  ],
+  "task": {
+    "instruction": "Analyze the full video. Detect observable actions and the order of actions. Only report a potential violation when the observed sequence contradicts a verified mandatory rule; otherwise report no_violation and unknown states where appropriate. Do not guess about objects or unseen events.",
+    "candidate_event_labels": [
+      "cash_receiving",
+      "identity_document_visible",
+      "cash_counting_manual",
+      "cash_counting_machine",
+      "cash_handover",
+      "bag_arrival",
+      "bag_opening",
+      "cash_from_bag",
+      "cash_from_safe",
+      "cash_into_safe",
+      "safe_door_open",
+      "safe_door_close",
+      "laptop_screen_active",
+      "workstation_lock_visible",
+      "person_enter",
+      "person_leave",
+      "unknown"
+    ],
+    "output_schema": {
+      "verdict": "violation|no_violation",
+      "events": [
+        {
+          "action": "string",
+          "start_sec": "number",
+          "end_sec": "number",
+          "confidence": "0..1",
+          "visual_evidence": "string"
+        }
+      ],
+      "violations": [
+        {
+          "type": "string",
+          "timecode_sec": "number",
+          "description": "string",
+          "observed_actions": [
+            "string"
+          ],
+          "normative_source": "document and precise verified clause, otherwise null",
+          "evidence_timestamps_sec": [
+            "number"
+          ],
+          "uncertainty": "string"
+        }
+      ]
+    },
+    "critical_constraints": [
+      "The video may start/end in the middle of a process. Missing footage is not evidence of a missing action.",
+      "Physical state of safe door is not the same as being locked.",
+      "Laptop lid being open or screen lit does not by itself prove that the session is unlocked.",
+      "Separate ground-truth timing from actual visible event timing.",
+      "No face identification.",
+      "Do not use cloud models or share video, frames or visual descriptions externally."
+    ]
+  },
+  "procedure_rules_file": "fortebank_procedure_rules.json"
+}

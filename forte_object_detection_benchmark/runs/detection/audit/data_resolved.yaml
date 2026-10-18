@@ -1,0 +1,17 @@
+path: /hdd/home/ABaglanova/forte_hack/forte_object_detection_benchmark/dataset
+train: /hdd/home/ABaglanova/forte_hack/forte_object_detection_benchmark/dataset/train/images
+val: /hdd/home/ABaglanova/forte_hack/forte_object_detection_benchmark/dataset/valid/images
+test: /hdd/home/ABaglanova/forte_hack/forte_object_detection_benchmark/dataset/test/images
+names:
+  0: cash
+  1: cash_bag
+  2: close_door
+  3: close_laptop
+  4: counting_machine
+  5: id
+  6: open_door
+  7: open_laptop
+  8: other
+  9: person
+  10: phone
+  11: safe

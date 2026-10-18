@@ -1,0 +1,4 @@
+name,checkpoint,model,loss,aug,accuracy,macro_f1,balanced_accuracy,weighted_f1,segments,wall_seconds,video_count,video_exact_match,video_micro_f1,status
+e00_mobilenet_ce_none,runs/experiments/e00_mobilenet_ce_none/best.pt,mobilenet_gru,ce,none,0.5714285714285714,0.2857142857142857,0.75,0.5408163265306122,14,18.07,7,0.2857142857142857,0.5833333333333334,ok
+e01_mobilenet_ce_light,runs/experiments/e01_mobilenet_ce_light/best.pt,mobilenet_gru,ce,light,0.5714285714285714,0.26666666666666666,0.75,0.5,14,17.56,7,0.2857142857142857,0.6363636363636364,ok
+e02_mobilenet_ce_strong,runs/experiments/e02_mobilenet_ce_strong/best.pt,mobilenet_gru,ce,strong,0.7142857142857143,0.33571428571428574,0.8333333333333333,0.7551020408163265,14,18.26,7,0.42857142857142855,0.6956521739130435,ok

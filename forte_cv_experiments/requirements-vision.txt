@@ -1,0 +1,6 @@
+-r requirements-core.txt
+torch>=2.1
+torchvision>=0.16
+ultralytics>=8.3
+# Optional: mediapipe >=0.10 with Tasks hand_landmarker.task asset
+# Optional API: pip install fastapi uvicorn python-multipart

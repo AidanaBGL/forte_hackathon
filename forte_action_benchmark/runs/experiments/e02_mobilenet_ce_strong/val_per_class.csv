@@ -1,0 +1,14 @@
+,precision,recall,f1-score,support
+cash_counting_machine,1.0,0.3333333333333333,0.5,6.0
+cash_handover,1.0,1.0,1.0,3.0
+cash_storage,0.0,0.0,0.0,0.0
+cashbag_handover,0.0,0.0,0.0,0.0
+cashier_leaving,1.0,1.0,1.0,2.0
+close door,0.0,0.0,0.0,0.0
+computer_interaction,0.0,0.0,0.0,0.0
+document_handover,0.0,0.0,0.0,0.0
+open door,0.0,0.0,0.0,0.0
+safe_closing,0.75,1.0,0.8571428571428571,3.0
+accuracy,0.7142857142857143,0.7142857142857143,0.7142857142857143,0.7142857142857143
+macro avg,0.375,0.3333333333333333,0.33571428571428574,14.0
+weighted avg,0.9464285714285714,0.7142857142857143,0.7551020408163265,14.0

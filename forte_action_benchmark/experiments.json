@@ -1,0 +1,140 @@
+{
+  "experiments": [
+    {
+      "name": "e00_mobilenet_ce_none",
+      "model": "mobilenet_gru",
+      "loss": "ce",
+      "aug": "none",
+      "epochs": 18,
+      "patience": 5,
+      "lr": 0.0003,
+      "batch": 4,
+      "frames": 16,
+      "size": 128
+    },
+    {
+      "name": "e01_mobilenet_ce_light",
+      "model": "mobilenet_gru",
+      "loss": "ce",
+      "aug": "light",
+      "epochs": 18,
+      "patience": 5,
+      "lr": 0.0003,
+      "batch": 4,
+      "frames": 16,
+      "size": 128
+    },
+    {
+      "name": "e02_mobilenet_ce_strong",
+      "model": "mobilenet_gru",
+      "loss": "ce",
+      "aug": "strong",
+      "epochs": 18,
+      "patience": 5,
+      "lr": 0.0003,
+      "batch": 4,
+      "frames": 16,
+      "size": 128
+    },
+    {
+      "name": "e03_mobilenet_weighted",
+      "model": "mobilenet_gru",
+      "loss": "weighted_ce",
+      "aug": "light",
+      "epochs": 18,
+      "patience": 5,
+      "lr": 0.0003,
+      "batch": 4,
+      "frames": 16,
+      "size": 128
+    },
+    {
+      "name": "e04_mobilenet_focal",
+      "model": "mobilenet_gru",
+      "loss": "focal",
+      "aug": "light",
+      "epochs": 18,
+      "patience": 5,
+      "lr": 0.0003,
+      "batch": 4,
+      "frames": 16,
+      "size": 128
+    },
+    {
+      "name": "e05_mobilenet_smooth",
+      "model": "mobilenet_gru",
+      "loss": "smooth_ce",
+      "aug": "light",
+      "epochs": 18,
+      "patience": 5,
+      "lr": 0.0003,
+      "batch": 4,
+      "frames": 16,
+      "size": 128
+    },
+    {
+      "name": "e06_resnet18_gru",
+      "model": "resnet18_gru",
+      "loss": "ce",
+      "aug": "light",
+      "epochs": 18,
+      "patience": 5,
+      "lr": 0.0002,
+      "batch": 4,
+      "frames": 16,
+      "size": 160
+    },
+    {
+      "name": "e07_r3d18_frozen",
+      "model": "r3d18",
+      "loss": "ce",
+      "aug": "light",
+      "epochs": 15,
+      "patience": 4,
+      "lr": 0.0001,
+      "batch": 2,
+      "frames": 16,
+      "size": 112,
+      "freeze_backbone": true
+    },
+    {
+      "name": "e08_mc3_18_frozen",
+      "model": "mc3_18",
+      "loss": "ce",
+      "aug": "light",
+      "epochs": 15,
+      "patience": 4,
+      "lr": 0.0001,
+      "batch": 2,
+      "frames": 16,
+      "size": 112,
+      "freeze_backbone": true
+    },
+    {
+      "name": "e09_r2plus1d_frozen",
+      "model": "r2plus1d18",
+      "loss": "ce",
+      "aug": "light",
+      "epochs": 15,
+      "patience": 4,
+      "lr": 0.0001,
+      "batch": 2,
+      "frames": 16,
+      "size": 112,
+      "freeze_backbone": true
+    },
+    {
+      "name": "e10_r3d18_finetuned",
+      "model": "r3d18",
+      "loss": "ce",
+      "aug": "light",
+      "epochs": 12,
+      "patience": 4,
+      "lr": 2e-05,
+      "batch": 2,
+      "frames": 16,
+      "size": 112,
+      "freeze_backbone": false
+    }
+  ]
+}

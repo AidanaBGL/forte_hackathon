@@ -1,0 +1,11 @@
+{
+  "accuracy": 0.7142857142857143,
+  "macro_f1": 0.33571428571428574,
+  "balanced_accuracy": 0.8333333333333333,
+  "weighted_f1": 0.7551020408163265,
+  "segments": 14,
+  "wall_seconds": 18.26,
+  "video_count": 7,
+  "video_exact_match": 0.42857142857142855,
+  "video_micro_f1": 0.6956521739130435
+}

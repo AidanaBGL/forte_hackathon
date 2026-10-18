@@ -1,0 +1,197 @@
+"""Conservative procedure classifier and candidate rule engine.
+
+CV detections are observations, not legal proof. Rule catalog distinguishes normative
+constraints from the team's proposed internal workflow hypotheses.
+"""
+from collections import Counter
+from dataclasses import dataclass
+import json
+from pathlib import Path
+
+PROCESS_NAMES = {
+    0: 'Приём наличных от клиента',
+    1: 'Внутренний пересчёт наличных',
+    2: 'Вход в кассовое помещение',
+    3: 'Выход из кассового помещения',
+    4: 'Приём и обработка упаковки с наличными',
+}
+
+ALIASES = {
+    'cash': 'cash', 'cash_bag': 'cash_bag', 'cashbag': 'cash_bag',
+    'counting_machine': 'counting_machine', 'person': 'person',
+    'id': 'document', 'document': 'document', 'phone': 'phone',
+    'open_laptop': 'laptop_open', 'close_laptop': 'laptop_closed',
+    'open_door': 'door_open', 'close_door': 'door_closed',
+    'safe': 'safe', 'other': 'other'
+}
+
+
+def clean_name(name):
+    return ALIASES.get(str(name).strip().lower().replace(' ', '_'), str(name).strip().lower().replace(' ', '_'))
+
+
+def _smooth_counts(counts, radius=2):
+    """Median filter rejects single-frame misses; no scipy requirement."""
+    if not counts: return []
+    return [int(sorted(counts[max(0, i-radius):min(len(counts), i+radius+1)])[len(counts[max(0, i-radius):min(len(counts), i+radius+1)])//2]) for i in range(len(counts))]
+
+
+def classify_process(samples):
+    """Each sample: {t,objects:[{class_name,conf,bbox}]}; returns scores + explanation.
+
+    Bag class 4 is now from *object detector* (not HSV); entry/exit only if reliable
+    occupancy transition at ends. Never use folder name or ground-truth label.
+    """
+    if not samples:
+        return {'class_id': None, 'name': 'Недостаточно данных', 'confidence': 0.0, 'scores': {}, 'reason': 'Нет кадров'}
+    counts = [sum(o['class_name']=='person' and o.get('conf',1)>=.35 for o in s['objects']) for s in samples]
+    counts = _smooth_counts(counts)
+    n=len(samples)
+    first=counts[:max(2, n//5)]
+    last=counts[-max(2,n//5):]
+    one_ratio=sum(c==1 for c in counts)/n
+    two_ratio=sum(c>=2 for c in counts)/n
+    any_ratio=sum(c>=1 for c in counts)/n
+    start_present=sum(c>=1 for c in first)/len(first)
+    end_present=sum(c>=1 for c in last)/len(last)
+    bag_ratio=sum(any(o['class_name']=='cash_bag' and o.get('conf',1)>=.45 for o in s['objects']) for s in samples)/n
+    machine_ratio=sum(any(o['class_name']=='counting_machine' for o in s['objects']) for s in samples)/n
+    # Scores are interpretable heuristic ranking, NOT calibrated probabilities.
+    scores = {
+        0: 0.05+0.86*two_ratio,
+        1: 0.05+0.55*one_ratio+0.3*machine_ratio,
+        2: 0.04+0.91*max(0, end_present-start_present) if start_present<=.35 and end_present>=.65 else 0.04,
+        3: 0.04+0.91*max(0, start_present-end_present) if start_present>=.65 and end_present<=.35 else 0.04,
+        4: 0.04+1.3*bag_ratio,
+    }
+    # Very brief bag glimpse can be false positive; minimum persistence at 2 FPS.
+    # A short but repeated observation of cash_bag is more distinctive than
+    # the generic 'one person' condition. Do not use bag color.
+    bag_frames=sum(any(o['class_name']=='cash_bag' and o.get('conf',1)>=.45 for o in s['objects']) for s in samples)
+    if bag_frames >= 2 and bag_ratio >= .015: scores[4]=1.25+bag_ratio
+    else: scores[4]=0.04
+    if any_ratio<.05 and bag_ratio<.015:
+        return {'class_id':None,'name':'Недостаточно данных','confidence':0.,
+                'scores':{str(k):round(float(v),3) for k,v in scores.items()},
+                'reason':'Детектор не нашёл людей или характерных объектов'}
+    best=max(scores,key=scores.get)
+    ordered=sorted(scores.values(),reverse=True)
+    margin=(ordered[0]-ordered[1]) if len(ordered)>1 else 0
+    confidence=round(min(0.95,max(0.15,0.45+margin*0.45)),3)
+    parts=[f'человек в кадре: {any_ratio:.0%}',f'двое или более: {two_ratio:.0%}',
+           f'пакет cash_bag: {bag_ratio:.0%}', f'счётная машина: {machine_ratio:.0%}',
+           f'присутствие в начале/конце: {start_present:.0%}/{end_present:.0%}']
+    return {'class_id':int(best),'name':PROCESS_NAMES[best], 'confidence':confidence,
+            'scores':{str(k):round(float(v),3) for k,v in scores.items()},'reason':'; '.join(parts),
+            'warning':'Классификация процесса эвристическая; confidence не является вероятностью правильности.'}
+
+
+def _obj_present(s, label, min_conf=.35):
+    return any(o['class_name']==label and o.get('conf',1)>=min_conf for o in s['objects'])
+
+
+def detection_events(samples, min_duration=.35):
+    """Event/state candidates from model's detector labels, not invented actions.
+    Distinguish close_door label (appearance) from observed transition (stronger).
+    """
+    events=[]
+    for label, action in [('door_open','door_open'),('door_closed','door_closed'),
+                          ('laptop_open','laptop_open'),('laptop_closed','laptop_closed')]:
+        starts=None; last_t=None; acc=[]
+        for s in samples+[{'t': (samples[-1]['t']+1) if samples else 0,'objects':[]}]:
+            present=_obj_present(s,label,.4)
+            if present:
+                if starts is None: starts=s['t']; acc=[]
+                last_t=s['t'];acc.append(max(o.get('conf',1) for o in s['objects'] if o['class_name']==label))
+            elif starts is not None:
+                if last_t-starts>=min_duration:
+                    events.append({'action':action,'start_sec':round(starts,2),'end_sec':round(last_t,2),
+                                   'confidence':round(float(sum(acc)/len(acc)),3),'source':'detector_state',
+                                   'evidence':'Обнаружен объект с соответствующей меткой состояния; не доказана системная блокировка/запирание'})
+                starts=None
+    return sorted(events,key=lambda e:e['start_sec'])
+
+
+def candidate_checks(process, samples, events, rules_catalog):
+    """Only report highly observable warnings; do NOT infer absent actions from crop/truncation.
+
+    All emitted checks are candidate procedural hypotheses unless direct norm can
+    be linked with adequate evidence. No automatic statement of legal guilt.
+    """
+    warnings=[]
+    if not samples: return warnings
+    duration=samples[-1]['t']
+    trailing=samples[-max(3,round(len(samples)*.15)):]
+    def ratio(c): return sum(_obj_present(s,c,.45) for s in trailing)/len(trailing)
+    person_last = sum(any(o['class_name']=='person' for o in s['objects']) for s in trailing)/len(trailing)
+    # Report only if the departure is supported by the *process* classifier.
+    if process.get('class_id') == 3 and person_last < .25:
+        if ratio('cash')>=.45:
+            warnings.append({'code':'H02_CASH_LEFT_ON_DESK', 'type':'Возможное оставление наличных при уходе',
+                            'timecode_sec':round(duration,2),
+                            'description':'После исчезновения кассира камера продолжает видеть объект, классифицированный как наличные. Местоположение (на столе или в хранилище) требует проверки человеком.',
+                            'source_status':'hypothesis', 'rule_id':'H02', 'confidence':.55})
+        if ratio('laptop_open')>=.45 and ratio('laptop_closed')<.2:
+            warnings.append({'code':'H02_LAPTOP_LEFT_OPEN', 'type':'Возможное незавершённое закрытие ноутбука',
+                            'timecode_sec':round(duration,2),
+                            'description':'При уходе кассира ноутбук визуально выглядит открытым. Это не доказывает, что рабочая сессия не заблокирована.',
+                            'source_status':'hypothesis','rule_id':'H02','confidence':.6})
+        if ratio('door_open')>=.45 and ratio('door_closed')<.2:
+            warnings.append({'code':'H02_DOOR_LEFT_OPEN','type':'Возможно оставлена открытой дверь помещения',
+                            'timecode_sec':round(duration,2),
+                            'description':'После ухода наблюдаются кадры с открытой дверью. Наличие обязательного требования её закрыть должно быть подтверждено регламентом.',
+                            'source_status':'hypothesis','rule_id':'H02','confidence':.6})
+    # Machine+cash co-visible is evidence of candidate action, NOT confirmation of count.
+    return warnings
+
+
+def rules_from_file(path):
+    data=json.loads(Path(path).read_text(encoding='utf-8'))
+    return data
+
+
+def check_order_hypotheses(process, events, graphs, min_conf=.78):
+    """Find only *observed, separated*, reversed steps; never flag mere absence.
+
+    Actions trained with whole-video labels produce approximate windows; these are
+    low-confidence research cues only, not verified banking-rule violations.
+    """
+    key=str(process.get('class_id'))
+    if key not in graphs: return []
+    graph=graphs[key]
+    mapping={'close door':'door_closed','open door':'door_open',
+             'safe_closing':'safe_closing', 'cash_counting_machine':'cash_counting_machine',
+             'cash_storage':'cash_storage','cash_handover':'cash_handover',
+             'cashbag_handover':'cashbag_handover',
+             'computer_interaction':'computer_interaction',
+             'document_handover':'document_handover','cashier_leaving':'cashier_leaving',
+             'close_door':'door_closed','open_door':'door_open',
+             'close_laptop':'laptop_closed','open_laptop':'laptop_open'}
+    reliable=[]
+    for e in events:
+        name=mapping.get(e['action'].strip().lower().replace(' ','_'),e['action'].strip().lower().replace(' ','_'))
+        if e['confidence']>=min_conf:
+            reliable.append({**e,'normalized':name})
+    flagged=[]
+    for before,after in graph.get('order_edges',[]):
+        early=[e for e in reliable if e['normalized']==before]
+        late=[e for e in reliable if e['normalized']==after]
+        if not early or not late:continue
+        # If a single reverse pair exists with disjoint intervals and no correctly
+        # ordered pair exists, flag it for manual review. No negative inference.
+        has_correct=any(a['end_sec']+.2<=b['start_sec'] for a in early for b in late)
+        if has_correct:continue
+        reverse=next(((a,b) for a in early for b in late
+                      if b['end_sec']+.5<a['start_sec']),None)
+        if reverse is None: continue
+        a,b=reverse
+        flagged.append({'code':f'SEQUENCE_{before}_{after}',
+                        'type':'Возможное нарушение порядка действий',
+                        'timecode_sec':round(b['start_sec'],2),
+                        'description':f'Распознано действие «{after}» раньше «{before}». '
+                            'Это несоответствие предполагаемому порядку процесса. '
+                            'Границы действий предварительные и требуют проверки.',
+                        'source_status':'hypothesis',
+                        'rule_id':'procedure_graph_'+key,
+                        'confidence':round(min(a['confidence'],b['confidence'])*.65,3)})
+    return flagged

@@ -1,0 +1,40 @@
+{
+  "method": "temporal",
+  "train_cv": {
+    "n_videos": 36,
+    "threshold": 0.1,
+    "accuracy": 0.5277777777777778,
+    "precision": 0.5277777777777778,
+    "violation_recall": 1.0,
+    "f1": 0.6909090909090909,
+    "false_positive_rate": 1.0,
+    "tp": 19,
+    "tn": 0,
+    "fp": 17,
+    "fn": 0,
+    "roc_auc": 0.34365325077399383
+  },
+  "test": {
+    "n_videos": 4,
+    "threshold": 0.1,
+    "accuracy": 0.5,
+    "precision": 0.5,
+    "violation_recall": 1.0,
+    "f1": 0.6666666666666666,
+    "false_positive_rate": 1.0,
+    "tp": 2,
+    "tn": 0,
+    "fp": 2,
+    "fn": 0,
+    "roc_auc": 0.75
+  },
+  "training_videos": 36,
+  "heldout_test_videos": [
+    "X-15",
+    "X-16",
+    "X-22",
+    "X-23"
+  ],
+  "run_seconds": 0.78,
+  "notes": "Video method has no event localization; temporal method uses point labels, NOT action types or legal validation."
+}

@@ -1,0 +1,14 @@
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+*.pt
+*.pth
+*.onnx
+*.mov
+*.mp4
+*.sqlite3
+storage/
+runs/
+dataset/
+*.zip

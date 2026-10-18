@@ -1,0 +1,4 @@
+name,checkpoint,model,optimizer,aug,imgsz,batch,wall_seconds,precision,recall,map50,map50_95,status,error
+e00_y26n_baseline,/hdd/home/ABaglanova/forte_hack/forte_object_detection_benchmark/runs/detection/e00_y26n_baseline/weights/best.pt,yolo26n.pt,AdamW,none,640,4,840.22,0.8764963286802799,0.8628924192686364,0.8969885135667025,0.7227991490500802,ok,
+e01_y26n_light,/hdd/home/ABaglanova/forte_hack/forte_object_detection_benchmark/runs/detection/e01_y26n_light/weights/best.pt,yolo26n.pt,AdamW,light,640,4,872.3,0.9149661819961519,0.919788233302793,0.9147153683359822,0.7376149669749552,ok,
+e02_y26n_mosaic,/hdd/home/ABaglanova/forte_hack/forte_object_detection_benchmark/runs/detection/e02_y26n_mosaic/weights/best.pt,yolo26n.pt,AdamW,mosaic,640,4,873.14,0.9105755664867885,0.9038497163341327,0.9077253558347145,0.7381855052325575,ok,

@@ -1,0 +1,65 @@
+{
+  "ranked_on": "validation mAP50-95 only",
+  "best": {
+    "name": "e02_y26n_mosaic",
+    "checkpoint": "/hdd/home/ABaglanova/forte_hack/forte_object_detection_benchmark/runs/detection/e02_y26n_mosaic/weights/best.pt",
+    "model": "yolo26n.pt",
+    "optimizer": "AdamW",
+    "aug": "mosaic",
+    "imgsz": 640,
+    "batch": 4,
+    "wall_seconds": 873.14,
+    "precision": 0.9105755664867885,
+    "recall": 0.9038497163341327,
+    "map50": 0.9077253558347145,
+    "map50_95": 0.7381855052325575,
+    "status": "ok"
+  },
+  "all": [
+    {
+      "name": "e00_y26n_baseline",
+      "checkpoint": "/hdd/home/ABaglanova/forte_hack/forte_object_detection_benchmark/runs/detection/e00_y26n_baseline/weights/best.pt",
+      "model": "yolo26n.pt",
+      "optimizer": "AdamW",
+      "aug": "none",
+      "imgsz": 640,
+      "batch": 4,
+      "wall_seconds": 840.22,
+      "precision": 0.8764963286802799,
+      "recall": 0.8628924192686364,
+      "map50": 0.8969885135667025,
+      "map50_95": 0.7227991490500802,
+      "status": "ok"
+    },
+    {
+      "name": "e01_y26n_light",
+      "checkpoint": "/hdd/home/ABaglanova/forte_hack/forte_object_detection_benchmark/runs/detection/e01_y26n_light/weights/best.pt",
+      "model": "yolo26n.pt",
+      "optimizer": "AdamW",
+      "aug": "light",
+      "imgsz": 640,
+      "batch": 4,
+      "wall_seconds": 872.3,
+      "precision": 0.9149661819961519,
+      "recall": 0.919788233302793,
+      "map50": 0.9147153683359822,
+      "map50_95": 0.7376149669749552,
+      "status": "ok"
+    },
+    {
+      "name": "e02_y26n_mosaic",
+      "checkpoint": "/hdd/home/ABaglanova/forte_hack/forte_object_detection_benchmark/runs/detection/e02_y26n_mosaic/weights/best.pt",
+      "model": "yolo26n.pt",
+      "optimizer": "AdamW",
+      "aug": "mosaic",
+      "imgsz": 640,
+      "batch": 4,
+      "wall_seconds": 873.14,
+      "precision": 0.9105755664867885,
+      "recall": 0.9038497163341327,
+      "map50": 0.9077253558347145,
+      "map50_95": 0.7381855052325575,
+      "status": "ok"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "description": "Detection only. Experiment order keeps quick YOLO26n runs first. Score on val mAP50-95, not test.",
+  "experiments": [
+    {"name": "e00_y26n_baseline", "model": "yolo26n.pt", "imgsz": 640, "optimizer": "AdamW", "lr0": 0.001, "aug": "none", "mosaic": 0.0, "translate": 0.0, "scale": 0.0, "hsv_h": 0.0, "hsv_s": 0.0, "hsv_v": 0.0},
+    {"name": "e01_y26n_light", "model": "yolo26n.pt", "imgsz": 640, "optimizer": "AdamW", "lr0": 0.001, "aug": "light", "mosaic": 0.0, "translate": 0.03, "scale": 0.15, "hsv_s": 0.2, "hsv_v": 0.15},
+    {"name": "e02_y26n_mosaic", "model": "yolo26n.pt", "imgsz": 640, "optimizer": "AdamW", "lr0": 0.001, "aug": "mosaic", "mosaic": 0.5, "translate": 0.05, "scale": 0.3, "hsv_s": 0.3, "hsv_v": 0.2},
+    {"name": "e03_y26n_cls_up", "model": "yolo26n.pt", "imgsz": 640, "optimizer": "AdamW", "lr0": 0.001, "aug": "light", "mosaic": 0.0, "cls": 0.8, "box": 7.5},
+    {"name": "e04_y26n_box_up", "model": "yolo26n.pt", "imgsz": 640, "optimizer": "AdamW", "lr0": 0.001, "aug": "light", "mosaic": 0.0, "cls": 0.5, "box": 10.0},
+    {"name": "e05_y26n_960", "model": "yolo26n.pt", "imgsz": 960, "optimizer": "AdamW", "lr0": 0.001, "aug": "light", "mosaic": 0.0},
+    {"name": "e06_y26s_light", "model": "yolo26s.pt", "imgsz": 640, "optimizer": "AdamW", "lr0": 0.001, "aug": "light", "mosaic": 0.0},
+    {"name": "e07_y26n_sgd", "model": "yolo26n.pt", "imgsz": 640, "optimizer": "SGD", "lr0": 0.01, "aug": "light", "mosaic": 0.0}
+  ]
+}

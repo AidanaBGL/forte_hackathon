@@ -1,0 +1,15 @@
+video,video_path,start_sec,end_sec,gt_action,pred_action,confidence,correct,segment_key
+-43.mp4,/hdd/home/ABaglanova/forte_hack/forte_action_benchmark/dataset/test/-43.8mYSoYLQXbwnMQMh8KJY/-43.mp4,0.0,23.366667,cash_counting_machine,open door,0.49438,0,seg_00010
+-21.mp4,/hdd/home/ABaglanova/forte_hack/forte_action_benchmark/dataset/train/-21.p7xo5sv4gAPaiSN5SUiF/-21.mp4,3.633333,6.8,safe_closing,safe_closing,0.43335,1,seg_00055
+-21.mp4,/hdd/home/ABaglanova/forte_hack/forte_action_benchmark/dataset/train/-21.p7xo5sv4gAPaiSN5SUiF/-21.mp4,12.033333,19.433333,cash_counting_machine,computer_interaction,0.58083,0,seg_00056
+-24.mp4,/hdd/home/ABaglanova/forte_hack/forte_action_benchmark/dataset/train/-24.XsATYwTkXNfnJT7nbZv9/-24.mp4,6.833333,8.4,safe_closing,safe_closing,0.51368,1,seg_00064
+-24.mp4,/hdd/home/ABaglanova/forte_hack/forte_action_benchmark/dataset/train/-24.XsATYwTkXNfnJT7nbZv9/-24.mp4,8.433333,12.1,cashier_leaving,cashier_leaving,0.85424,1,seg_00065
+-34.mp4,/hdd/home/ABaglanova/forte_hack/forte_action_benchmark/dataset/train/-34.FfwAO37gySqTq1K1SibV/-34.mp4,6.133333,9.733333,cash_handover,cash_handover,0.47853,1,seg_00077
+-34.mp4,/hdd/home/ABaglanova/forte_hack/forte_action_benchmark/dataset/train/-34.FfwAO37gySqTq1K1SibV/-34.mp4,13.033333,16.933333,cash_counting_machine,open door,0.54238,0,seg_00078
+-38.mp4,/hdd/home/ABaglanova/forte_hack/forte_action_benchmark/dataset/train/-38.HdAZlTaJg5G76EnLbQuE/-38.mp4,5.366667,10.7,cash_handover,cash_handover,0.39797,1,seg_00079
+-38.mp4,/hdd/home/ABaglanova/forte_hack/forte_action_benchmark/dataset/train/-38.HdAZlTaJg5G76EnLbQuE/-38.mp4,10.433333,23.766667,cash_counting_machine,open door,0.23325,0,seg_00080
+-38.mp4,/hdd/home/ABaglanova/forte_hack/forte_action_benchmark/dataset/train/-38.HdAZlTaJg5G76EnLbQuE/-38.mp4,36.1,40.433333,cash_handover,cash_handover,0.34942,1,seg_00081
+-38.mp4,/hdd/home/ABaglanova/forte_hack/forte_action_benchmark/dataset/train/-38.HdAZlTaJg5G76EnLbQuE/-38.mp4,41.066667,50.966667,cash_counting_machine,cash_handover,0.38427,0,seg_00082
+-26.mp4,/hdd/home/ABaglanova/forte_hack/forte_action_benchmark/dataset/train/-26.3QldJ4CM6rmu8vgAgMjL/-26.mp4,10.633333,12.5,safe_closing,safe_closing,0.51559,1,seg_00083
+-26.mp4,/hdd/home/ABaglanova/forte_hack/forte_action_benchmark/dataset/train/-26.3QldJ4CM6rmu8vgAgMjL/-26.mp4,12.633333,18.266667,cashier_leaving,cashier_leaving,0.89568,1,seg_00084
+-44.mp4,/hdd/home/ABaglanova/forte_hack/forte_action_benchmark/dataset/train/-44.P9zSApYZF96yAY90rJMJ/-44.mp4,2.9,18.733333,cash_counting_machine,open door,0.51012,0,seg_00093
